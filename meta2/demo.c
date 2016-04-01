@@ -4,7 +4,8 @@
 #include <stdio.h>
 
 int main(int argc, char** argv){
-  char in, comando;
+  char in, *comando;
+  int serial_fd;
   comando = (char*) malloc(sizeof(char)*BUFSIZE);
 
   serial_fd = abrir_porta();
