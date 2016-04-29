@@ -66,7 +66,7 @@ int relax_flag = 0;
 char c = 'a';
  
 float X, Y, Z;
-float x, y, z, phi;
+float x, y, z, phi = 0.0;
  
 unsigned int pos = 1500;
 float angSenseBas = -90;
@@ -95,6 +95,8 @@ void send_command(void);
 void make_and_send_command(void);
 void rad2deg(float *ang);
 void move(float x, float y, float z, float phi);
+void calc_tetas(float x, float y, float z, float phi);
+
  
 int main()
 {
@@ -104,7 +106,7 @@ int main()
  
     // INICIO DO PROGRAMA DEMO //
  
-    printf("PROGRAMA DEMONSTRACAO INICIADO\n\n");
+    printf("PROGRAMA INTOLERANTS INICIADO\n\n");
  
     serial_fd = abrir_porta();
  
@@ -132,6 +134,23 @@ int main()
         //////////////////////
         printf("\nPRIMEIRO COMANDO - POSICAL INICIAL\n");
  
+        sprintf(comando, "%s", STANDBY);
+ 
+        //Escrevendo com teste de escrita
+        if (enviar_comando(comando, serial_fd) != -1)
+        {
+            printf("Enviando de comando com teste de envio: %s\n", STANDBY);
+        }
+        else
+        {
+            printf("Problema no envio do comando\nAbortando o programa...");
+            return -1;
+        }
+ 
+        printf("Pressione enter para continuar...");
+        getchar();
+        memset(comando, 0, BUFSIZE);
+ 
         sprintf(comando, "%s", HOME_POS);
  
         //Escrevendo com teste de escrita
@@ -145,14 +164,12 @@ int main()
             return -1;
         }
  
-        printf("Pressione enter para continuar...");
-        getchar();
+        memset(comando, 0, BUFSIZE);
  
         /////////////////////
         // SEGUNDO COMANDO //
         /////////////////////
  
-        memset(comando, 0, BUFSIZE);
  
  
         //system("rm input.txt");
@@ -173,24 +190,26 @@ int main()
 
             X = cos(t1)*(L3*cos(t2 + t3) + L2*cos(t2) + L4*cos(t2 + t3 + t4));
  
-            Y = -sin(t1)*(L3*cos(t2 + t3) + L2*cos(t2) + L4*cos(t2 + t3 + t4));
+            Y = sin(t1)*(L3*cos(t2 + t3) + L2*cos(t2) + L4*cos(t2 + t3 + t4));
  
             Z = L1 + L3*sin(t2 + t3) + L2*sin(t2) + L4*sin(t2 + t3 + t4);
+            
+            calc_tetas(X, Y, Z, phi);
 
             printf("A coordenada x do ponto : %.2f \n", X);
             printf("A coordenada y do ponto : %.2f \n", Y);
             printf("A coordenada z do ponto : %.2f \n", Z);
             //printf("#0P%dS%d#1P%dS%d#2P%dS%d#3P%dS%d#4P%dS%dT%d\n", (int)SenseBas, s,  (int)SenseShl, s,  (int)SenseElb, s,  (int)SenseWri, s,  (int)SenseGri, s, t);
             printf("%s\n", last_comando);
-            printf("BASE     -> (Q)ESQUERDA ; (A)DIREITA  | LARGURA DO PULSO: %d \t | ANGULO: %d \n", (int)SenseBas, (int)angSenseBas);
-            printf("OMBRO    -> (W)CIMA     ; (S)BAIXO    | LARGURA DO PULSO: %d \t | ANGULO: %d \n", (int)SenseShl, (int)angSenseShl);
-            printf("COTOVELO -> (E)CIMA     ; (D)BAIXO    | LARGURA DO PULSO: %d \t | ANGULO: %d \n", (int)SenseElb, (int)angSenseElb);
-            printf("PUNHO    -> (R)CIMA     ; (F)BAIXO    | LARGURA DO PULSO: %d \t | ANGULO: %d \n", (int)SenseWri, (int)angSenseWri);
+            printf("BASE     -> (Q)ESQUERDA ; (A)DIREITA  | LARGURA DO PULSO: %d \t | ANGULO: %d | ANGULOC: %f \n", (int)SenseBas, (int)angSenseBas, teta[0]);
+            printf("OMBRO    -> (W)CIMA     ; (S)BAIXO    | LARGURA DO PULSO: %d \t | ANGULO: %d | ANGULOC: %f \n", (int)SenseShl, (int)angSenseShl, teta[1]);
+            printf("COTOVELO -> (E)CIMA     ; (D)BAIXO    | LARGURA DO PULSO: %d \t | ANGULO: %d | ANGULOC: %f \n", (int)SenseElb, (int)angSenseElb, teta[2]);
+            printf("PUNHO    -> (R)CIMA     ; (F)BAIXO    | LARGURA DO PULSO: %d \t | ANGULO: %d | ANGULOC: %f \n", (int)SenseWri, (int)angSenseWri, teta[3]);
             printf("GARRA    -> (T)FECHAR   ; (G)ABRIR    | LARGURA DO PULSO: %d \t              \n", (int)SenseGri);
             printf("Digite space para sair\n");
-            system("/bin/stty raw");
+            if(system("/bin/stty raw"));
             c = getchar();
-            system("/bin/stty cooked");
+            if(system("/bin/stty cooked"));
  
  
             if (c == 'q') {
@@ -257,7 +276,7 @@ int main()
                 pos = SenseGri;
                 sprintf(comando, "#%dP%d", GRI_SERVO, trava(GRI_SERVO, pos));
             } else if (c == 'p') {
-                system("gnome-terminal -x /home/aluno/intolerants/meta3/meta3");
+                if(system("gnome-terminal -x /home/aluno/intolerants/meta3/meta3"));
             } else if (c == '=') {
                 FILE *f = fopen("input.txt", "a");
                 if (f == NULL)
@@ -324,8 +343,8 @@ int main()
                 sprintf(comando, "#4P%d", trava(GRI_SERVO, 1890));
             } else if (c == 'h') {
                 printf("Insira s e t: ");
-                scanf("%d", &s);
-                scanf("%d", &t);
+                if(scanf("%d", &s));
+                if(scanf("%d", &t));
  
                 sprintf(comando, "#0P1528S%d#1P1468S%d#2P1672S%d#3P1504S%d#4P1870S%dT%d", s, s, s, s, s, t);
             } else if (c == 'z') {
@@ -372,13 +391,13 @@ int main()
                 getchar();
             } else if (c == 'm'){
                 printf("x: ");
-                scanf("%f", &x);
+                if(scanf("%f", &x));
                 printf("y: ");
-                scanf("%f", &y);
+                if(scanf("%f", &y));
                 printf("z: ");
-                scanf("%f", &z);
+                if(scanf("%f", &z));
                 printf("phi: ");
-                scanf("%f", &phi);
+                if(scanf("%f", &phi));
                 move(x,y,z,phi);
                 printf("%s\n", comando);
             }
@@ -396,7 +415,15 @@ int main()
             memset(comando, 0, BUFSIZE);
  
         } while ( c != ' ');
- 
+        
+        sprintf(comando, "%s", STANDBY);
+        enviar_comando(comando, serial_fd);
+        memset(comando, 0, BUFSIZE);
+        printf("Pressione enter para relaxar...");
+        getchar();
+        sprintf(comando, "%s", RELAX);
+        enviar_comando(comando, serial_fd);
+
         // FIM DO PROGRAMA DEMO //
         fechar_porta(serial_fd);
         printf("\nAcesso a porta serial /dev/ttyS0 finalizado\n");
@@ -410,7 +437,7 @@ int main()
  
 void send_command(void) {
     enviar_comando(comando,serial_fd);
-    sprintf(last_comando, comando);
+    sprintf(last_comando, "%s", comando);
     memset(comando, 0, BUFSIZE);
 }
  
@@ -424,13 +451,18 @@ void rad2deg(float *ang){
 }
  
 void move(float x, float y, float z, float phi){
+    calc_tetas(x, y, z, phi); 
+    make_and_send_command();
+}
+
+void calc_tetas(float x, float y, float z, float phi) {
     int i;
     phi *= PI/180;
     float exy = sqrt(pow(x,2) + pow(y,2));
     teta[0] = atan2(y/exy, x/exy);
     float x14 = exy - L4*cos(phi);
     float z14 = z - L1 - L4*sin(phi);
-        float c3 = ((pow(x14, 2) + pow(z14, 2) - pow(L2, 2) - pow(L3, 2))/(2*L2*L3));
+    float c3 = ((pow(x14, 2) + pow(z14, 2) - pow(L2, 2) - pow(L3, 2))/(2*L2*L3));
     float s3 = sqrt(1-pow(c3,2));
     teta[2] = atan2(s3,c3);
     float exz14 = sqrt(pow(x14,2) + pow(z14,2));
@@ -438,14 +470,8 @@ void move(float x, float y, float z, float phi){
     float beta = atan2(sin(teta[2])*L3/exz14, (L2 + L3*c3)/exz14);
     teta[1] = alpha - beta;
     teta[3] = phi - teta[1] - teta[2];
-        printf("exy: %f, x14: %f, z14: %f, exz14: %f, alpha: %f, beta: %f, s3: %f, c3: %f\n", exy, x14, z14, exz14, alpha, beta, s3, c3);
- 
     for (i = 0; i < 4; i++){
-        printf("teta[%d]: %f\n", i, teta[i]);
         rad2deg(&teta[i]);
         sense[i] = 0.09*teta[i] + 500;
-        printf("teta[%d]: %f, sense[%d]: %f\n", i, teta[i], i, sense[i]);
     }
- 
-    make_and_send_command();
 }
