@@ -31,24 +31,32 @@
 #define py 0
 #define OFFSETX 100
 #define OFFSETY 200
+#define offsetBas 664
+#define offsetShl 680
+#define offsetElb 2428
+#define offsetWri 588
+#define gainBas 0.1041667
+#define gainShl 0.1142132
+#define gainElb 0.1209677
+#define gainWri 0.0982533
         // HOME_POS
-        // SenseBas = 1528;
-        // SenseShl = 1468;
-        // SenseElb = 1672;
-        // SenseWri = 1504;
-        // SenseGri = 1870;
+        // sense[0] = 1528;
+        // sense[1] = 1468;
+        // sense[2] = 1672;
+        // sense[3] = 1504;
+        // sense[4] = 1870;
         // BACK
-        // SenseBas = 1528;
-        // SenseShl = 1796;
-        // SenseElb = 2072;
-        // SenseWri = 0844;
-        // SenseGri = 1870;
+        // sense[0] = 1528;
+        // sense[1] = 1796;
+        // sense[2] = 2072;
+        // sense[3] = 0844;
+        // sense[4] = 1870;
         // RELAX
-        // SenseBas = 0000;
-        // SenseShl = 0000;
-        // SenseElb = 0000;
-        // SenseWri = 0000;
-        // SenseGri = 0000;
+        // sense[0] = 0000;
+        // sense[1] = 0000;
+        // sense[2] = 0000;
+        // sense[3] = 0000;
+        // sense[4] = 0000;
      
 float Senses[6][5] = {{1532, 1088, 1612, 844 , 1990},
                       {1288, 1344, 2060, 1008, 1990},
@@ -73,18 +81,8 @@ float angSenseBas = -90;
 float angSenseShl = 90;
 float angSenseElb = -90;
 float angSenseWri = 0;
-float SenseBasAux = 1500;
-float SenseShlAux = 1500;
-float SenseElbAux = 1500;
-float SenseWriAux = 1500;
-float SenseGriAux = 1500;
-float SenseBas = 1528;
-float SenseShl = 1468;
-float SenseElb = 1672;
-float SenseWri = 1504;
-float SenseGri = 1870;
 float teta[4] = {0};
-float sense[5] = {0};
+float sense[5] = {1528, 1468, 1672, 1504, 1870};
  
 float L1 = 6.3, L2 = 14.6, L3 = 18.3, L4 = 8.5;
  
@@ -96,6 +94,7 @@ void make_and_send_command(void);
 void rad2deg(float *ang);
 void move(float x, float y, float z, float phi);
 void calc_tetas(float x, float y, float z, float phi);
+void calc_senses(void);
 
  
 int main()
@@ -179,9 +178,7 @@ int main()
  
         do {
  
-            //system ("clear");
- 
-            printf("Digite space para sair\n");
+            if(system ("clear"));
  
             t1 = angSenseBas*PI/180;
             t2 = angSenseShl*PI/180;
@@ -199,81 +196,66 @@ int main()
             printf("A coordenada x do ponto : %.2f \n", X);
             printf("A coordenada y do ponto : %.2f \n", Y);
             printf("A coordenada z do ponto : %.2f \n", Z);
-            //printf("#0P%dS%d#1P%dS%d#2P%dS%d#3P%dS%d#4P%dS%dT%d\n", (int)SenseBas, s,  (int)SenseShl, s,  (int)SenseElb, s,  (int)SenseWri, s,  (int)SenseGri, s, t);
+            //printf("#0P%dS%d#1P%dS%d#2P%dS%d#3P%dS%d#4P%dS%dT%d\n", (int)sense[0], s,  (int)sense[1], s,  (int)sense[2], s,  (int)sense[3], s,  (int)sense[4], s, t);
             printf("%s\n", last_comando);
-            printf("BASE     -> (Q)ESQUERDA ; (A)DIREITA  | LARGURA DO PULSO: %d \t | ANGULO: %d | ANGULOC: %f \n", (int)SenseBas, (int)angSenseBas, teta[0]);
-            printf("OMBRO    -> (W)CIMA     ; (S)BAIXO    | LARGURA DO PULSO: %d \t | ANGULO: %d | ANGULOC: %f \n", (int)SenseShl, (int)angSenseShl, teta[1]);
-            printf("COTOVELO -> (E)CIMA     ; (D)BAIXO    | LARGURA DO PULSO: %d \t | ANGULO: %d | ANGULOC: %f \n", (int)SenseElb, (int)angSenseElb, teta[2]);
-            printf("PUNHO    -> (R)CIMA     ; (F)BAIXO    | LARGURA DO PULSO: %d \t | ANGULO: %d | ANGULOC: %f \n", (int)SenseWri, (int)angSenseWri, teta[3]);
-            printf("GARRA    -> (T)FECHAR   ; (G)ABRIR    | LARGURA DO PULSO: %d \t              \n", (int)SenseGri);
+            printf("BASE     -> (Q)ESQUERDA ; (A)DIREITA  | LARGURA DO PULSO: %d \t | ANGULO: %d \t | ANGULOC: %.2f \n", (int)sense[0], (int)angSenseBas, teta[0]);
+            printf("OMBRO    -> (W)CIMA     ; (S)BAIXO    | LARGURA DO PULSO: %d \t | ANGULO: %d \t | ANGULOC: %.2f \n", (int)sense[1], (int)angSenseShl, teta[1]);
+            printf("COTOVELO -> (E)CIMA     ; (D)BAIXO    | LARGURA DO PULSO: %d \t | ANGULO: %d \t | ANGULOC: %.2f \n", (int)sense[2], (int)angSenseElb, teta[2]);
+            printf("PUNHO    -> (R)CIMA     ; (F)BAIXO    | LARGURA DO PULSO: %d \t | ANGULO: %d \t | ANGULOC: %.2f \n", (int)sense[3], (int)angSenseWri, teta[3]);
+            printf("GARRA    -> (T)FECHAR   ; (G)ABRIR    | LARGURA DO PULSO: %d \t              \n", (int)sense[4]);
             printf("Digite space para sair\n");
             if(system("/bin/stty raw"));
             c = getchar();
             if(system("/bin/stty cooked"));
- 
- 
+
+
             if (c == 'q') {
-                SenseBas = SenseBas + 4;
-                SenseBasAux = SenseBasAux + 4;
-                pos = SenseBas;
-                angSenseBas = (636- SenseBasAux) * 0.1041667;
+                sense[0] = sense[0] + 4;
+                pos = sense[0];
+                angSenseBas = (offsetBas - sense[0]) * gainBas;
                 sprintf(comando, "#%dP%d", BAS_SERVO, trava(BAS_SERVO, pos));
             } else if (c == 'a') {
-                SenseBas = SenseBas - 4;
-                SenseBasAux = SenseBasAux - 4;
-                pos = SenseBas;
-                angSenseBas = (636 - SenseBasAux ) * 0.1041667;
+                sense[0] = sense[0] - 4;
+                pos = sense[0];
+                angSenseBas = (offsetBas - sense[0]) * gainBas;
                 sprintf(comando, "#%dP%d", BAS_SERVO, trava(BAS_SERVO, pos));
- 
             } else if (c == 'w') {
-                SenseShl = SenseShl + 4;
-                SenseShlAux = SenseShlAux + 4;
-                pos = SenseShl;
-                angSenseShl = (SenseShlAux - 712) * 0.1142132;
-                //angSenseShl = (SenseShlAux - 500) * 0.09;
+                sense[1] = sense[1] + 4;
+                pos = sense[1];
+                angSenseShl = (sense[1] - offsetShl) * gainShl;
                 sprintf(comando, "#%dP%d", SHL_SERVO, pos * (pos < 1850) + 1850 * (pos >= 1850));
             } else if (c == 's') {
-                SenseShl = SenseShl - 4;
-                SenseShlAux = SenseShlAux - 4;
-                pos = SenseShl;
-                angSenseShl = (SenseShlAux - 712) * 0.1142132;
-                // angSenseShl = (SenseShlAux - 500) * 0.09;
+                sense[1] = sense[1] - 4;
+                pos = sense[1];
+                angSenseShl = (sense[1] - offsetShl) * gainShl;
                 sprintf(comando, "#%dP%d", SHL_SERVO, pos * (pos < 1850) + 1850 * (pos >= 1850));
             } else if (c == 'e') {
-                SenseElb = SenseElb - 4;
-                SenseElbAux = SenseElbAux - 4;
-                pos = SenseElb;
-                angSenseElb = (2256 - SenseElbAux) * 0.1209677 - 180;
+                sense[2] = sense[2] - 4;
+                pos = sense[2];
+                angSenseElb = (offsetElb - sense[2]) * gainElb - 180;
                 sprintf(comando, "#%dP%d", ELB_SERVO, pos);
             } else if (c == 'd') {
-                SenseElb = SenseElb + 4;
-                SenseElbAux = SenseElbAux + 4;
-                pos = SenseElb;
-                angSenseElb = (2256 - SenseElbAux) * 0.1209677 - 180;
+                sense[2] = sense[2] + 4;
+                pos = sense[2];
+                angSenseElb = (offsetElb - sense[2]) * gainElb - 180;
                 sprintf(comando, "#%dP%d", ELB_SERVO, pos);
             } else if (c == 'r') {
-                SenseWri = SenseWri + 4;
-                SenseWriAux = SenseWriAux + 4;
-                pos = SenseWri;
-                angSenseWri = (SenseWriAux - 584) * 0.0982533 - 90;
-                // angSenseWri = (SenseWri - 500) * 0.0982533;
+                sense[3] = sense[3] + 4;
+                pos = sense[3];
+                angSenseWri = (sense[3] - offsetWri) * gainWri - 90;
                 sprintf(comando, "#%dP%d", WRI_SERVO, trava(WRI_SERVO, pos));
             } else if (c == 'f') {
-                SenseWri = SenseWri - 4;
-                SenseWriAux = SenseWriAux - 4;
-                pos = SenseWri;
-                angSenseWri = (SenseWriAux - 584) * 0.0982533 - 90;
-                // angSenseWri = (SenseWri - 500) * 0.0982533;
+                sense[3] = sense[3] - 4;
+                pos = sense[3];
+                angSenseWri = (sense[3] - offsetWri) * gainWri - 90;
                 sprintf(comando, "#%dP%d", WRI_SERVO, trava(WRI_SERVO, pos));
             } else if (c == 't') {
-                SenseGri = SenseGri + 10;
-                SenseGriAux = SenseGriAux + 10;
-                pos = SenseGri;
+                sense[4] = sense[4] + 10;
+                pos = sense[4];
                 sprintf(comando, "#%dP%d", GRI_SERVO, trava(GRI_SERVO, pos));
             } else if (c == 'g') {
-                SenseGri = SenseGri - 10;
-                SenseGriAux = SenseGriAux - 10;
-                pos = SenseGri;
+                sense[4] = sense[4] - 10;
+                pos = sense[4];
                 sprintf(comando, "#%dP%d", GRI_SERVO, trava(GRI_SERVO, pos));
             } else if (c == 'p') {
                 if(system("gnome-terminal -x /home/aluno/intolerants/meta3/meta3"));
@@ -296,8 +278,7 @@ int main()
                 }
  
                 /* print some text */
-                fprintf(f2, "#0P%uT1000#1P%uT1000#2P%uT1000#3P%uT1000#4P%uT1000\n", (unsigned int)SenseBas, (unsigned int)SenseShl, (unsigned int)SenseElb, (unsigned int)SenseWri, (unsigned int)SenseGri);
-                fprintf(f2, "%u,%u,%u,%u,%u\n", (unsigned int)SenseBasAux, (unsigned int)SenseShlAux, (unsigned int)SenseElbAux, (unsigned int)SenseWriAux, (unsigned int)SenseGriAux);
+                fprintf(f2, "#0P%uT1000#1P%uT1000#2P%uT1000#3P%uT1000#4P%uT1000\n", (unsigned int)sense[0], (unsigned int)sense[1], (unsigned int)sense[2], (unsigned int)sense[3], (unsigned int)sense[4]);
                  
                 fclose(f2);
             } else if (c == '1') {
@@ -315,14 +296,14 @@ int main()
             } else if (c == '7') {
                 sprintf(comando, "%s", HOME_POS);               
             } else if (c == '0') {
-                // SenseBas = 1528;
-                // SenseShl = 1796;
-                // SenseElb = 2072;
-                // SenseWri = 844;
-                // SenseGri = 1870;
+                // sense[0] = 1528;
+                // sense[1] = 1796;
+                // sense[2] = 2072;
+                // sense[3] = 844;
+                // sense[4] = 1870;
                 // // send_command(1528,1796,2072,844,1870);
                 // int delay = 2000;
-                // sprintf(comando,"#0P%dT%d#1P%dT%d#2P%dT%d#3P%dT%d#4P%dT%d", SenseBas, s,  SenseShl, s,  SenseElb, s,  SenseWri, s,  SenseGri, s, t);
+                // sprintf(comando,"#0P%dT%d#1P%dT%d#2P%dT%d#3P%dT%d#4P%dT%d", sense[0], s,  sense[1], s,  sense[2], s,  sense[3], s,  sense[4], s, t);
                 sprintf(comando, "%s", STANDBY);
                 enviar_comando(comando, serial_fd);
                 memset(comando, 0, BUFSIZE);
@@ -390,6 +371,7 @@ int main()
                 printf("Pressione enter para acordar...");
                 getchar();
             } else if (c == 'm'){
+                printf("\n\n");
                 printf("x: ");
                 if(scanf("%f", &x));
                 printf("y: ");
@@ -398,7 +380,7 @@ int main()
                 if(scanf("%f", &z));
                 printf("phi: ");
                 if(scanf("%f", &phi));
-                move(x,y,z,phi);
+                move(x,-y,z,phi);
                 printf("%s\n", comando);
             }
  
@@ -450,11 +432,6 @@ void rad2deg(float *ang){
     *ang *= 180/PI;
 }
  
-void move(float x, float y, float z, float phi){
-    calc_tetas(x, y, z, phi); 
-    make_and_send_command();
-}
-
 void calc_tetas(float x, float y, float z, float phi) {
     int i;
     phi *= PI/180;
@@ -463,7 +440,7 @@ void calc_tetas(float x, float y, float z, float phi) {
     float x14 = exy - L4*cos(phi);
     float z14 = z - L1 - L4*sin(phi);
     float c3 = ((pow(x14, 2) + pow(z14, 2) - pow(L2, 2) - pow(L3, 2))/(2*L2*L3));
-    float s3 = sqrt(1-pow(c3,2));
+    float s3 = -sqrt(1-pow(c3,2));
     teta[2] = atan2(s3,c3);
     float exz14 = sqrt(pow(x14,2) + pow(z14,2));
     float alpha = atan2(z14/exz14, x14/exz14);
@@ -472,6 +449,32 @@ void calc_tetas(float x, float y, float z, float phi) {
     teta[3] = phi - teta[1] - teta[2];
     for (i = 0; i < 4; i++){
         rad2deg(&teta[i]);
-        sense[i] = 0.09*teta[i] + 500;
     }
+}
+
+void calc_senses(){
+    sense[0] = -(teta[0]/0.1041667 - 636 - 28);
+    sense[1] = teta[1]/0.1142132 - 32 + 712;
+    sense[2] = -((teta[2]+180)/0.1209677 - 2256 - 172);
+    sense[3] = (teta[3]+90)/0.0982533 + 4 + 584;
+}
+
+void move(float x, float y, float z, float phi){
+
+    calc_tetas(x, y, z, phi);
+    // int i;
+    // for (i = 0; i < 4; i++){
+    //     printf("teta[%d]: %.2f ", i+1, teta[i]);
+    // }
+    // printf("\n");
+    calc_senses();
+    make_and_send_command();
+    X = x;
+    Y = y;
+    Z = z;
+    angSenseBas = (offsetBas - sense[0]) * gainBas;
+    angSenseShl = (sense[1] - offsetShl) * gainShl;
+    angSenseElb = (offsetElb - sense[2]) * gainElb - 180;
+    angSenseWri = (sense[3] - offsetWri) * gainWri - 90;
+
 }
