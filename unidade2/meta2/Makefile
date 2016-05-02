@@ -1,4 +1,4 @@
-EXEC	= main
+EXEC	= meta2
 CXX	= gcc
 MAIN	= meta2.c
 OPTIONS	= -O3 -Wall

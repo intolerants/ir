@@ -92,14 +92,10 @@ int t = 2000, s = 300;
 void send_command(void);
 void make_and_send_command(void);
 void rad2deg(float *ang);
+void move(float x, float y, float z, float phi);
 void calc_tetas(float x, float y, float z, float phi);
 void calc_senses(void);
-void move(float x, float y, float z, float phi);
-void pega(void);
-void solta(void);
-void repouso(void);
-void pega_piloto(void);
-void desenha(int *bolas, int n);
+
  
 int main()
 {
@@ -200,7 +196,6 @@ int main()
             printf("A coordenada x do ponto : %.2f \n", X);
             printf("A coordenada y do ponto : %.2f \n", Y);
             printf("A coordenada z do ponto : %.2f \n", Z);
-            printf("phi da ferramenta       : %.2f \n", angSenseShl+angSenseElb+angSenseWri);
             //printf("#0P%dS%d#1P%dS%d#2P%dS%d#3P%dS%d#4P%dS%dT%d\n", (int)sense[0], s,  (int)sense[1], s,  (int)sense[2], s,  (int)sense[3], s,  (int)sense[4], s, t);
             printf("%s\n", last_comando);
             printf("BASE     -> (Q)ESQUERDA ; (A)DIREITA  | LARGURA DO PULSO: %d \t | ANGULO: %d \t | ANGULOC: %.2f \n", (int)sense[0], (int)angSenseBas, teta[0]);
@@ -215,42 +210,42 @@ int main()
 
 
             if (c == 'q') {
-                sense[0] = sense[0] + 2;
+                sense[0] = sense[0] + 4;
                 pos = sense[0];
                 angSenseBas = (offsetBas - sense[0]) * gainBas;
                 sprintf(comando, "#%dP%d", BAS_SERVO, trava(BAS_SERVO, pos));
             } else if (c == 'a') {
-                sense[0] = sense[0] - 2;
+                sense[0] = sense[0] - 4;
                 pos = sense[0];
                 angSenseBas = (offsetBas - sense[0]) * gainBas;
                 sprintf(comando, "#%dP%d", BAS_SERVO, trava(BAS_SERVO, pos));
             } else if (c == 'w') {
-                sense[1] = sense[1] + 2;
+                sense[1] = sense[1] + 4;
                 pos = sense[1];
                 angSenseShl = (sense[1] - offsetShl) * gainShl;
                 sprintf(comando, "#%dP%d", SHL_SERVO, pos * (pos < 1850) + 1850 * (pos >= 1850));
             } else if (c == 's') {
-                sense[1] = sense[1] - 2;
+                sense[1] = sense[1] - 4;
                 pos = sense[1];
                 angSenseShl = (sense[1] - offsetShl) * gainShl;
                 sprintf(comando, "#%dP%d", SHL_SERVO, pos * (pos < 1850) + 1850 * (pos >= 1850));
             } else if (c == 'e') {
-                sense[2] = sense[2] - 2;
+                sense[2] = sense[2] - 4;
                 pos = sense[2];
                 angSenseElb = (offsetElb - sense[2]) * gainElb - 180;
                 sprintf(comando, "#%dP%d", ELB_SERVO, pos);
             } else if (c == 'd') {
-                sense[2] = sense[2] + 2;
+                sense[2] = sense[2] + 4;
                 pos = sense[2];
                 angSenseElb = (offsetElb - sense[2]) * gainElb - 180;
                 sprintf(comando, "#%dP%d", ELB_SERVO, pos);
             } else if (c == 'r') {
-                sense[3] = sense[3] + 2;
+                sense[3] = sense[3] + 4;
                 pos = sense[3];
                 angSenseWri = (sense[3] - offsetWri) * gainWri - 90;
                 sprintf(comando, "#%dP%d", WRI_SERVO, trava(WRI_SERVO, pos));
             } else if (c == 'f') {
-                sense[3] = sense[3] - 2;
+                sense[3] = sense[3] - 4;
                 pos = sense[3];
                 angSenseWri = (sense[3] - offsetWri) * gainWri - 90;
                 sprintf(comando, "#%dP%d", WRI_SERVO, trava(WRI_SERVO, pos));
@@ -286,16 +281,20 @@ int main()
                 fprintf(f2, "#0P%uT1000#1P%uT1000#2P%uT1000#3P%uT1000#4P%uT1000\n", (unsigned int)sense[0], (unsigned int)sense[1], (unsigned int)sense[2], (unsigned int)sense[3], (unsigned int)sense[4]);
                  
                 fclose(f2);
-            } else if (c == 'b') {
-            	int *bolas, i, n;
-            	printf("\nDigite quantas bolinhas:\n");
-            	scanf("%d", &n);
-            	bolas = malloc(n*sizeof(int));
-            	printf("\nDigite a ordem das bolinhas:\n");
-            	for (i = 0; i < n; i++)
-            		scanf("%d", &bolas[i]);
-            		//bolas[i] = i+1;
-            	desenha(bolas, n);
+            } else if (c == '1') {
+                sprintf(comando, "%s", POS1);
+            } else if (c == '2') {
+                sprintf(comando, "%s", POS2);               
+            } else if (c == '3') {
+                sprintf(comando, "%s", POS3);               
+            } else if (c == '4') {
+                sprintf(comando, "%s", POS4);               
+            } else if (c == '5') {
+                sprintf(comando, "%s", POS5);               
+            } else if (c == '6') {
+                sprintf(comando, "%s", POS6);
+            } else if (c == '7') {
+                sprintf(comando, "%s", HOME_POS);               
             } else if (c == '0') {
                 // sense[0] = 1528;
                 // sense[1] = 1796;
@@ -305,12 +304,24 @@ int main()
                 // // send_command(1528,1796,2072,844,1870);
                 // int delay = 2000;
                 // sprintf(comando,"#0P%dT%d#1P%dT%d#2P%dT%d#3P%dT%d#4P%dT%d", sense[0], s,  sense[1], s,  sense[2], s,  sense[3], s,  sense[4], s, t);
-                repouso();
-            } else if (c == '1') {
-            	move(2.97,-22.55,9,-5);
-            	sleep(3);
-            	move(6.02,-27.16,9.63,-10.38);
-            	sleep(3);
+                sprintf(comando, "%s", STANDBY);
+                enviar_comando(comando, serial_fd);
+                memset(comando, 0, BUFSIZE);
+                printf("Pressione enter para relaxar...");
+                getchar();
+                sprintf(comando, "%s", RELAX);
+                enviar_comando(comando, serial_fd);
+                memset(comando, 0, BUFSIZE);
+                printf("Pressione enter para acordar...");
+                getchar();
+                sprintf(comando, "%s", WAKEUP);
+                // sprintf(comando, "#1P1900S%d#2P2276S%d#3P1024S%d#4P1870S%dT%d", s, s, s, s, t);
+                enviar_comando(comando, serial_fd);
+                memset(comando, 0, BUFSIZE);
+            } else if (c == '8') {
+                sprintf(comando, "#4P%d", trava(GRI_SERVO, 1350));
+            } else if (c == '9') {
+                sprintf(comando, "#4P%d", trava(GRI_SERVO, 1890));
             } else if (c == 'h') {
                 printf("Insira s e t: ");
                 if(scanf("%d", &s));
@@ -318,12 +329,47 @@ int main()
  
                 sprintf(comando, "#0P1528S%d#1P1468S%d#2P1672S%d#3P1504S%d#4P1870S%dT%d", s, s, s, s, s, t);
             } else if (c == 'z') {
- 				pega();
- 				// getchar();
- 			} else if (c == 'x') {
- 				solta();
- 				// printf("solta\n");
- 				// getchar();
+ 
+                sprintf(comando, "#0P1540S300#1P1244S300#2P1716S300#3P1720S300#4P1150S300T4000");
+                enviar_comando(comando, serial_fd);
+                memset(comando, 0, BUFSIZE);
+                printf("Pressione enter para acordar...");
+                getchar();
+                sprintf(comando, "#0P1540S300#1P1244S300#2P1716S300#3P1720S300#4P1160S300T4000");
+                enviar_comando(comando, serial_fd);
+                memset(comando, 0, BUFSIZE);
+                printf("Pressione enter para acordar...");
+                getchar();
+                sprintf(comando, "#0P1540S300#1P1148S300#2P1596S300#3P1720S300#4P1160S300T4000");
+                enviar_comando(comando, serial_fd);
+                memset(comando, 0, BUFSIZE);
+                printf("Pressione enter para acordar...");
+                getchar();
+                sprintf(comando, "#0P1532S300#1P1148S300#2P1596S300#3P1720S300#4P1980S300T4000");
+                enviar_comando(comando, serial_fd);
+                memset(comando, 0, BUFSIZE);
+                printf("Pressione enter para acordar...");
+                getchar();
+                sprintf(comando, "#0P1532S300#1P1232S300#2P1596S300#3P1732S300#4P1980S300T4000");
+                enviar_comando(comando, serial_fd);
+                memset(comando, 0, BUFSIZE);
+                printf("Pressione enter para acordar...");
+                getchar();
+                sprintf(comando, "#0P1448S300#1P1548S300#2P2144S300#3P1844S300#4P1980S300T4000");
+                enviar_comando(comando, serial_fd);
+                memset(comando, 0, BUFSIZE);
+                printf("Pressione enter para acordar...");
+                getchar();
+                sprintf(comando, "#0P1448S300#1P1548S300#2P2176S300#3P1916S300#4P1980S300T4000");
+                enviar_comando(comando, serial_fd);
+                memset(comando, 0, BUFSIZE);
+                printf("Pressione enter para acordar...");
+                getchar();
+                sprintf(comando, "#0P1400S300#1P1364S300#2P1996S300#3P1916S300#4P1980S300T4000");
+                enviar_comando(comando, serial_fd);
+                memset(comando, 0, BUFSIZE);
+                printf("Pressione enter para acordar...");
+                getchar();
             } else if (c == 'm'){
                 printf("\n\n");
                 printf("x: ");
@@ -334,7 +380,7 @@ int main()
                 if(scanf("%f", &z));
                 printf("phi: ");
                 if(scanf("%f", &phi));
-                move(x,y,z,phi);
+                move(x,-y,z,phi);
                 printf("%s\n", comando);
             }
  
@@ -348,7 +394,6 @@ int main()
                 return -1;
             }
  
-            // while ( (c = getchar()) != '\n');
             memset(comando, 0, BUFSIZE);
  
         } while ( c != ' ');
@@ -379,7 +424,7 @@ void send_command(void) {
 }
  
 void make_and_send_command(void){
-    sprintf(comando, "#0P%uS100#1P%uS100#2P%uS100#3P%uS100\n", (unsigned int)sense[0], (unsigned int)sense[1], (unsigned int)sense[2], (unsigned int)sense[3]);
+    sprintf(comando, "#0P%uS300#1P%uS300#2P%uS300#3P%uS300\n", (unsigned int)sense[0], (unsigned int)sense[1], (unsigned int)sense[2], (unsigned int)sense[3]);
     send_command();
 }
  
@@ -391,20 +436,17 @@ void calc_tetas(float x, float y, float z, float phi) {
     int i;
     phi *= PI/180;
     float exy = sqrt(pow(x,2) + pow(y,2));
-    printf("\nCALC_TESTAS - x:%.2f y:%.2f z:%.2f phi%.2f\n", x, y, z, phi);
     teta[0] = atan2(y/exy, x/exy);
     float x14 = exy - L4*cos(phi);
     float z14 = z - L1 - L4*sin(phi);
     float c3 = ((pow(x14, 2) + pow(z14, 2) - pow(L2, 2) - pow(L3, 2))/(2*L2*L3));
-    float s3 = -sqrt(fabs(1-pow(c3,2)));
-    // float s3 = -sqrt(1-pow(c3,2));
+    float s3 = -sqrt(1-pow(c3,2));
     teta[2] = atan2(s3,c3);
     float exz14 = sqrt(pow(x14,2) + pow(z14,2));
     float alpha = atan2(z14/exz14, x14/exz14);
     float beta = atan2(sin(teta[2])*L3/exz14, (L2 + L3*c3)/exz14);
     teta[1] = alpha - beta;
     teta[3] = phi - teta[1] - teta[2];
-    printf("\nexy:%.2f x14:%.2f s3sqrt:%.2f exz14:%.2f\n",exy,x14,1-pow(c3,2),exz14);
     for (i = 0; i < 4; i++){
         rad2deg(&teta[i]);
     }
@@ -418,7 +460,6 @@ void calc_senses(){
 }
 
 void move(float x, float y, float z, float phi){
-    printf("\nMOVE - x:%.2f y:%.2f z:%.2f phi%.2f\n", x, y, z, phi);
 
     calc_tetas(x, y, z, phi);
     // int i;
@@ -436,82 +477,4 @@ void move(float x, float y, float z, float phi){
     angSenseElb = (offsetElb - sense[2]) * gainElb - 180;
     angSenseWri = (sense[3] - offsetWri) * gainWri - 90;
 
-}
-
-void pega(){
-	sprintf(comando, "#4P1950");
-    enviar_comando(comando, serial_fd);
-    memset(comando, 0, BUFSIZE);
-}
-
-void solta(){
-	sprintf(comando, "#4P1320");
-    enviar_comando(comando, serial_fd);
-    memset(comando, 0, BUFSIZE);
-}
-
-void repouso(){
-	sprintf(comando, "%s", STANDBY);
-    enviar_comando(comando, serial_fd);
-    memset(comando, 0, BUFSIZE);
-    printf("Pressione enter para relaxar...");
-    getchar();
-    sprintf(comando, "%s", RELAX);
-    enviar_comando(comando, serial_fd);
-    memset(comando, 0, BUFSIZE);
-    printf("Pressione enter para acordar...");
-    getchar();
-    sprintf(comando, "%s", WAKEUP);
-    // sprintf(comando, "#1P1900S%d#2P2276S%d#3P1024S%d#4P1870S%dT%d", s, s, s, s, t);
-    enviar_comando(comando, serial_fd);
-    memset(comando, 0, BUFSIZE);
-}
-
-void pega_piloto(){
-	//antes do piloto
-	move(0,-32.29,17.93,0);
-	sleep(3);
-	solta();
-	sleep(2);
-	//pega piloto
-	//move(0,-36.94,15.97,-1.09);
-	move(0,-37,15.88,-4.38);
-
-	sleep(3);
-	pega();
-	sleep(2);
-	//acima do piloto
-	move(0,-34.72,24.36,11.51);
-	sleep(3);
-	//acima da area de trabalho
-	move(0,-26.71,20.93,6.5);
-	sleep(5);
-}
-
-void desenha(int *bolas, int n){
-	int i;
-	pega_piloto();
-	for (i = 0; i < n; i++){
-		switch(bolas[i]){
-            case 1: 
-            	move(2.97,-22.55,9.25,-12.96);
-            	break;
-            case 2:
-            	move(6.02,-27.16,9.63,-10.38);
-            	break;
-            case 3:
-            	move(2.94,-31.8,11.69,-3.07);
-            	break;
-            case 4:
-            	move(-3.8,-31.6,11.69,-3.07);
-            	break;
-            case 5:
-            	move(-6.2,-26.1,11,-3.07);
-            	break;
-            case 6:
-            	move(-2.7,-20.3,9.1,-3.07);
-            	break;
-		}
-		sleep(5);
-	}
 }
