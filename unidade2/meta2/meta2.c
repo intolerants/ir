@@ -203,10 +203,10 @@ int main()
             printf("phi da ferramenta       : %.2f \n", angSenseShl+angSenseElb+angSenseWri);
             //printf("#0P%dS%d#1P%dS%d#2P%dS%d#3P%dS%d#4P%dS%dT%d\n", (int)sense[0], s,  (int)sense[1], s,  (int)sense[2], s,  (int)sense[3], s,  (int)sense[4], s, t);
             printf("%s\n", last_comando);
-            printf("BASE     -> (Q)ESQUERDA ; (A)DIREITA  | LARGURA DO PULSO: %d \t | ANGULO: %d \t | ANGULOC: %.2f \n", (int)sense[0], (int)angSenseBas, teta[0]);
-            printf("OMBRO    -> (W)CIMA     ; (S)BAIXO    | LARGURA DO PULSO: %d \t | ANGULO: %d \t | ANGULOC: %.2f \n", (int)sense[1], (int)angSenseShl, teta[1]);
-            printf("COTOVELO -> (E)CIMA     ; (D)BAIXO    | LARGURA DO PULSO: %d \t | ANGULO: %d \t | ANGULOC: %.2f \n", (int)sense[2], (int)angSenseElb, teta[2]);
-            printf("PUNHO    -> (R)CIMA     ; (F)BAIXO    | LARGURA DO PULSO: %d \t | ANGULO: %d \t | ANGULOC: %.2f \n", (int)sense[3], (int)angSenseWri, teta[3]);
+            printf("BASE     -> (Q)ESQUERDA ; (A)DIREITA  | LARGURA DO PULSO: %.2f \t | ANGULO: %.2f \t | ANGULOC: %.2f \n", sense[0], angSenseBas, teta[0]);
+            printf("OMBRO    -> (W)CIMA     ; (S)BAIXO    | LARGURA DO PULSO: %.2f \t | ANGULO: %.2f \t | ANGULOC: %.2f \n", sense[1], angSenseShl, teta[1]);
+            printf("COTOVELO -> (E)CIMA     ; (D)BAIXO    | LARGURA DO PULSO: %.2f \t | ANGULO: %.2f \t | ANGULOC: %.2f \n", sense[2], angSenseElb, teta[2]);
+            printf("PUNHO    -> (R)CIMA     ; (F)BAIXO    | LARGURA DO PULSO: %.2f \t | ANGULO: %.2f \t | ANGULOC: %.2f \n", sense[3], angSenseWri, teta[3]);
             printf("GARRA    -> (T)FECHAR   ; (G)ABRIR    | LARGURA DO PULSO: %d \t              \n", (int)sense[4]);
             printf("Digite space para sair\n");
             if(system("/bin/stty raw"));
@@ -227,32 +227,38 @@ int main()
             } else if (c == 'w') {
                 sense[1] = sense[1] + 2;
                 pos = sense[1];
-                angSenseShl = (sense[1] - offsetShl) * gainShl;
+                // angSenseShl = (sense[1] - offsetShl) * gainShl;
+                angSenseShl = 762.684+7.948*sense[1];
                 sprintf(comando, "#%dP%d", SHL_SERVO, pos * (pos < 1850) + 1850 * (pos >= 1850));
             } else if (c == 's') {
                 sense[1] = sense[1] - 2;
                 pos = sense[1];
-                angSenseShl = (sense[1] - offsetShl) * gainShl;
+                // angSenseShl = (sense[1] - offsetShl) * gainShl;
+                angSenseShl = 762.684+7.948*sense[1];
                 sprintf(comando, "#%dP%d", SHL_SERVO, pos * (pos < 1850) + 1850 * (pos >= 1850));
             } else if (c == 'e') {
                 sense[2] = sense[2] - 2;
                 pos = sense[2];
-                angSenseElb = (offsetElb - sense[2]) * gainElb - 180;
+                // angSenseElb = (offsetElb - sense[2]) * gainElb - 180;
+                angSenseElb = 854.377-9.231*sense[2];
                 sprintf(comando, "#%dP%d", ELB_SERVO, pos);
             } else if (c == 'd') {
                 sense[2] = sense[2] + 2;
                 pos = sense[2];
-                angSenseElb = (offsetElb - sense[2]) * gainElb - 180;
+                // angSenseElb = (offsetElb - sense[2]) * gainElb - 180;
+                angSenseElb = 854.377-9.231*sense[2];
                 sprintf(comando, "#%dP%d", ELB_SERVO, pos);
             } else if (c == 'r') {
                 sense[3] = sense[3] + 2;
                 pos = sense[3];
-                angSenseWri = (sense[3] - offsetWri) * gainWri - 90;
+                // angSenseWri = (sense[3] - offsetWri) * gainWri - 90;
+                angSenseWri = 1465.639+10.114*sense[3];
                 sprintf(comando, "#%dP%d", WRI_SERVO, trava(WRI_SERVO, pos));
             } else if (c == 'f') {
                 sense[3] = sense[3] - 2;
                 pos = sense[3];
-                angSenseWri = (sense[3] - offsetWri) * gainWri - 90;
+                // angSenseWri = (sense[3] - offsetWri) * gainWri - 90;
+                angSenseWri = 1465.639+10.114*sense[3];
                 sprintf(comando, "#%dP%d", WRI_SERVO, trava(WRI_SERVO, pos));
             } else if (c == 't') {
                 sense[4] = sense[4] + 10;
@@ -411,10 +417,21 @@ void calc_tetas(float x, float y, float z, float phi) {
 }
 
 void calc_senses(){
+    /* Calibracao manual*/
     sense[0] = -(teta[0]/0.1041667 - 636 - 28);
-    sense[1] = teta[1]/0.1142132 - 32 + 712;
-    sense[2] = -((teta[2]+180)/0.1209677 - 2256 - 172);
-    sense[3] = (teta[3]+90)/0.0982533 + 4 + 584;
+    // sense[1] = teta[1]/0.1142132 - 32 + 712;
+    // sense[2] = -((teta[2]+180)/0.1209677 - 2256 - 172);
+    // sense[3] = (teta[3]+90)/0.0982533 + 4 + 584;
+
+    /* Calibracao por regressao linear */
+    // sense[1] = 762.684+7.948*teta[1];
+    // sense[2] = 854.377-9.231*teta[2];
+    // sense[3] = 1465.639+10.114*teta[3];
+
+    /* Calibracao quadrada*/
+    sense[1] = 0.0020*pow(teta[1],2) + 7.6037*teta[1] + 775.4128;
+    sense[2] = -0.0088*pow(teta[2],2) -10.9082*teta[2] + 783.4413;
+    sense[3] = 10.6*teta[3] + 1461.8;
 }
 
 void move(float x, float y, float z, float phi){
