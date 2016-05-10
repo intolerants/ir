@@ -80,9 +80,15 @@ void findCircles() {
   cvtColor( src, gray, CV_BGR2GRAY );
   
   // convertTo(OutputArray m, int rtype, double alpha=1, double beta=0 )
-  gray.convertTo(gray, -1, 0.5, 0.5);
+  
+  gray.convertTo(gray, -1, 1.3, -200);
   namedWindow("gray"); imshow("gray", gray);
-  moveWindow("gray", 280, 0);
+  moveWindow("gray", 270, 0);
+
+  medianBlur(gray, gray, 3);
+  namedWindow("blur"); imshow("blur", gray);
+  moveWindow("blur", 270, 300);
+  // moveWindow("gray", 280, 0);
   // Canny(InputArray image, OutputArray edges, double threshold1, double threshold2, int apertureSize=3, bool L2gradient=false )
   // 10 10
   Canny(gray, canny, 10, 140, 3, true);
@@ -91,12 +97,14 @@ void findCircles() {
   // Canny(gray, canny, 20, 20);
   // Canny(gray, canny, 10, 20);
   namedWindow("canny1"); imshow("canny1", canny>0);
-  moveWindow("canny1", 280+220, 0);
+  moveWindow("canny1", 270*2, 0);
+  // moveWindow("canny1", 280+220, 0);
 
   // medianBlur(InputArray src, OutputArray dst, int ksize)
-  medianBlur(canny, canny, 3);
-  namedWindow("canny2"); imshow("canny2", canny>0);
-  moveWindow("canny2", 500+220, 0);
+  // medianBlur(canny, canny, 3);
+  // namedWindow("canny2"); imshow("canny2", canny>0);
+  // moveWindow("canny2", 270*3, 0);
+  // // moveWindow("canny2", 500+220, 0);
   
   // Reduce the noise so we avoid false circle detection
 /*  GaussianBlur(InputArray src, 
@@ -115,9 +123,14 @@ void findCircles() {
     sigmaY – Gaussian kernel standard deviation in Y direction; if sigmaY is zero, it is set to be equal to sigmaX, if both sigmas are zeros, they are computed from ksize.width and ksize.height , respectively (see getGaussianKernel() for details); to fully control the result regardless of possible future modifications of all this semantics, it is recommended to specify all of ksize, sigmaX, and sigmaY.
     borderType – pixel extrapolation method (see borderInterpolate() for details).
 */
-  GaussianBlur( canny, canny, Size(99, 99), 3, 3);
+  GaussianBlur( canny, canny, Size(99, 99), 0.6, 0.6);
+  // GaussianBlur( canny, canny, Size(99, 99), 3, 3);
   namedWindow("canny3"); imshow("canny3", canny>0);
-  moveWindow("canny3", 720+220, 0);
+  moveWindow("canny3", 270*4, 0);
+  medianBlur(canny, canny, 5);
+  namedWindow("canny3Blur"); imshow("canny3Blur", canny>0);
+  moveWindow("canny3Blur", 270*4, 250);
+  // moveWindow("canny3", 720+220, 0);
  
   vector<Vec3f> circles;
  
@@ -137,9 +150,9 @@ void findCircles() {
    }
  
   // Show your results
-  namedWindow( "Hough Circle Transform Demo"); imshow( "Hough Circle Transform Demo", src );
+  namedWindow( "src"); imshow( "src", src );
+  moveWindow("src", 0, 0);
 
- 
   waitKey(0);
 }
 
