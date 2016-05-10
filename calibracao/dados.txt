@@ -1,0 +1,72 @@
+A coordenada x do ponto : -0.00 
+A coordenada y do ponto : -36.43 
+A coordenada z do ponto : 19.39 
+phi da ferramenta       : 8.13 
+LARGURA DO PULSO:  	 | ANGULO: -90.00 	 | ANGULOC: -90.00 
+LARGURA DO PULSO:  	 | ANGULO: 48.14 	 | ANGULOC: 48.02 
+LARGURA DO PULSO:  	 | ANGULO: -44.97 	 | ANGULOC: -40.99 
+LARGURA DO PULSO:  	 | ANGULO: 4.96 	 | ANGULOC: -7.02 
+LARGURA DO PULSO: 1870 	              
+A coordenada x do ponto : -0.00 
+A coordenada y do ponto : -32.23 
+A coordenada z do ponto : 14.42 
+phi da ferramenta       : -0.05 
+LARGURA DO PULSO:  	 | ANGULO: -90.00 	 | ANGULOC: -90.00 
+LARGURA DO PULSO:  	 | ANGULO: 65.04 	 | ANGULOC: 65.04 
+LARGURA DO PULSO:  	 | ANGULO: -81.26 	 | ANGULOC: -81.27 
+LARGURA DO PULSO:  	 | ANGULO: 16.16 	 | ANGULOC: 16.23 
+LARGURA DO PULSO: 1870 	              
+Digite space para sair
+A coordenada x do ponto : -0.00 
+A coordenada y do ponto : -26.85 
+A coordenada z do ponto : 11.70 
+phi da ferramenta       : -6.68 
+LARGURA DO PULSO:  	 | ANGULO: -90.00 	 | ANGULOC: -90.00 
+LARGURA DO PULSO:  	 | ANGULO: 82.18 	 | ANGULOC: 80.47 
+LARGURA DO PULSO:  	 | ANGULO: -108.35 	 | ANGULOC: -109.92 
+LARGURA DO PULSO:  	 | ANGULO: 19.50 	 | ANGULOC: 29.44 
+LARGURA DO PULSO: 1870 	              
+A coordenada x do ponto : -0.00 
+A coordenada y do ponto : -21.60 
+A coordenada z do ponto : 11.30 
+phi da ferramenta       : -6.61 
+LARGURA DO PULSO:  	 | ANGULO: -90.00 	 | ANGULOC: -90.00 
+LARGURA DO PULSO:  	 | ANGULO: 102.51 	 | ANGULOC: 100.33 
+LARGURA DO PULSO:  	 | ANGULO: -129.40 	 | ANGULOC: -131.12 
+LARGURA DO PULSO:  	 | ANGULO: 20.29 	 | ANGULOC: 30.78 
+LARGURA DO PULSO: 1870 	              
+A coordenada x do ponto : -0.00 
+A coordenada y do ponto : -17.10 
+A coordenada z do ponto : 9.65 
+phi da ferramenta       : -11.93 
+LARGURA DO PULSO:  	 | ANGULO: -90.00 	 | ANGULOC: -90.00 
+LARGURA DO PULSO:  	 | ANGULO: 123.75 	 | ANGULOC: 119.08 
+LARGURA DO PULSO:  	 | ANGULO: -146.34 	 | ANGULOC: -150.01 
+LARGURA DO PULSO:  	 | ANGULO: 10.66 	 | ANGULOC: 30.93 
+LARGURA DO PULSO: 1870 	              
+_____________________________________________________________________________
+-37.5
+-90.00 	1528.00
+41.66 	1101.49
+-50.31 	1311.71
+8.66 	1554.48
+-32.5
+-90.00	1528.00
+62.61 	1249.49
+-81.80	1611.71
+19.18 	1668.48
+-27.5
+-90.00	1528.00
+80.96	1399.49
+-105.05	1835.71
+24.09	1702.48
+-22.5
+-90.00	1528.00
+100.82	1577.49
+-124.64	2009.71
+23.82	1710.48
+-17.5
+-90.00 	1528.00
+126.37 	1763.49
+-141.60 2149.71
+15.23 	1612.48
