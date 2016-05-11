@@ -45,23 +45,26 @@ using namespace cv;
 
 #define NUM_OF_COLORS 6
 
+int COLORS[NUM_OF_COLORS] = {RED, PINK, BLUE, CIAN, GREEN, YELLOW};
+char ANSWERS[NUM_OF_COLORS] = {'r', 'p', 'b', 'c', 'g', 'y'};
+float LIMITS[NUM_OF_COLORS-1];
+
 void takePicture() {
 	CvCapture* capture = 0;
   Mat frame, frameCopy, image;
 	Mat gray, cropped;
 	Mat canny;
 
+  capture = cvCaptureFromCAM( -1 ); //0=default, -1=any camera, 1..99=your camera
 
-        capture = cvCaptureFromCAM( -1 ); //0=default, -1=any camera, 1..99=your camera
-
-	if ( !capture )
+	if (!capture)
 	{
 		cout << "No camera detected" << endl;
 	}
 
-	cvNamedWindow( "result", CV_WINDOW_AUTOSIZE );
+	cvNamedWindow("result", CV_WINDOW_AUTOSIZE);
 
-	if ( capture )
+	if (capture)
 	{
 		cout << "In capture ..." << endl;
 		// for (;;)
@@ -81,15 +84,15 @@ void takePicture() {
 		// 	if ( waitKey( 10 ) >= 0 )
 		// 		break;
 		// }
-		IplImage* iplImg = cvQueryFrame( capture );
-		cvShowImage( "result", iplImg );
-		cvSaveImage("img.png",iplImg);
+		IplImage* iplImg = cvQueryFrame(capture);
+		cvShowImage("result", iplImg);
+		cvSaveImage("img.png", iplImg);
 		//waitKey(0);
 	}
 
 	
-	cvReleaseCapture( &capture );
-	cvDestroyWindow( "result" );
+	cvReleaseCapture(&capture);
+	cvDestroyWindow("result");
 }
 
 void findCircles() {
@@ -98,7 +101,7 @@ void findCircles() {
   // src = imread( "img.png", 1 );
 
   // Transform it into the C++ cv::Mat format
-  Mat image = imread( "img.png", 1 );
+  Mat image = imread("img.png", 1);
   // namedWindow( "Hough Circle Transform Demo"); imshow( "Hough Circle Transform Demo", image );
 
   Rect box = Rect(360, 170, 210, 180);
@@ -110,14 +113,14 @@ void findCircles() {
   Mat src(image,box);
 
   Mat color;
-  cvtColor( src, color, CV_BGR2RGB );
+  cvtColor(src, color, CV_BGR2RGB);
 
   // bilateralFilter( color, color, 15, 80, 80 );
   namedWindow("color"); imshow("color", color);
   moveWindow("color", 0, 250);
 
 
-  cvtColor( src, gray, CV_RGB2GRAY );
+  cvtColor(src, gray, CV_RGB2GRAY);
   // cvtColor( src, gray, CV_BGR2GRAY );
   
   // convertTo(OutputArray m, int rtype, double alpha=1, double beta=0 )
@@ -138,7 +141,7 @@ void findCircles() {
   // Canny(gray, canny, 10, 150);
   // Canny(gray, canny, 20, 20);
   // Canny(gray, canny, 10, 20);
-  namedWindow("canny1"); imshow("canny1", canny>0);
+  namedWindow("canny1"); imshow("canny1", canny > 0);
   moveWindow("canny1", 270*2, 0);
   // moveWindow("canny1", 280+220, 0);
 
@@ -167,24 +170,24 @@ void findCircles() {
 */
   // GaussianBlur( canny, canny, Size(99, 99), 0.6, 0.6);
   // GaussianBlur( canny, canny, Size(99, 99), 3, 3);
-  blur( canny, canny, Size( 3, 3 ), Point(-1,-1) );
+  blur(canny, canny, Size( 3, 3 ), Point(-1,-1));
 
-  namedWindow("canny3"); imshow("canny3", canny>0);
+  namedWindow("canny3"); imshow("canny3", canny > 0);
   moveWindow("canny3", 270*4, 0);
   medianBlur(canny, canny, 5);
   // medianBlur(canny, canny, 5);
 
-  namedWindow("canny3Blur"); imshow("canny3Blur", canny>0);
+  namedWindow("canny3Blur"); imshow("canny3Blur", canny > 0);
   moveWindow("canny3Blur", 270*4, 250);
   // moveWindow("canny3", 720+220, 0);
  
   vector<Vec3f> circles;
  
   // Apply the Hough Transform to find the circles
-  HoughCircles( canny, circles, CV_HOUGH_GRADIENT, 0.5, 30, 200, 50, 0, 0 );
+  HoughCircles(canny, circles, CV_HOUGH_GRADIENT, 0.5, 30, 200, 50, 0, 0);
  
   // Draw the circles detected
-  for( size_t i = 0; i < circles.size(); i++ )
+  for(size_t i = 0; i < circles.size(); i++)
   {
       Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
       int radius = cvRound(circles[i][2]);     
@@ -196,25 +199,30 @@ void findCircles() {
    }
  
   // Show your results
-  namedWindow( "src"); imshow( "src", src );
+  namedWindow("src"); imshow("src", src);
   moveWindow("src", 0, 0);
 
   waitKey(0);
 }
 
 void checkColor(Point center) {
-  // if(hue > )
-  //   color = 'r';
-  // else if(hue > (RED-PINK)/2+PINK)
+  int size = 10;
+  float sample = 0;
+  for (int i = 0; i < size; ++i)
+  {
+    sample += src.at<Vec3b>(center + Point(size/2 - i, i);
+    sample += src.at<Vec3b>(center + Point(size/2 - i, -i);
+  }
+  for (int i = 0; i < NUM_OF_COLORS-1; ++i)
+  {
+    if (hue > LIMITS[i])
+      return COLORS[i];
+  }
+  return COLORS[NUM_OF_COLORS-1];
 }
 
-
-int main( int argc, const char** argv )
+int main(int argc, const char** argv)
 {
-
-  int COLORS[NUM_OF_COLORS] = {RED, PINK, BLUE, CIAN, GREEN, YELLOW};
-  char ANSWERS[NUM_OF_COLORS] = {'r', 'p', 'b', 'c', 'g', 'y'};
-  float LIMITS[NUM_OF_COLORS-1];
   for (int i = 0; i < NUM_OF_COLORS-1; ++i)
   {
     LIMITS[i] = (COLORS[i] - COLORS[i+1])/2.0 + COLORS[i+1];
