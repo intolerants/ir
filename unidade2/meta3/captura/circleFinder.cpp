@@ -48,51 +48,69 @@ using namespace cv;
 int COLORS[NUM_OF_COLORS] = {RED, PINK, BLUE, CIAN, GREEN, YELLOW};
 char ANSWERS[NUM_OF_COLORS] = {'r', 'p', 'b', 'c', 'g', 'y'};
 float LIMITS[NUM_OF_COLORS-1];
+Mat src;
+void takePicture(void);
+void findCircles(void);
+char checkColor(Point center);
+
+int main(int argc, const char** argv)
+{
+  for (int i = 0; i < NUM_OF_COLORS-1; ++i)
+  {
+    LIMITS[i] = (COLORS[i] - COLORS[i+1])/2.0 + COLORS[i+1];
+    //cout << LIMITS[i] << endl;
+  }
+	// takePicture();
+	findCircles();
+
+	return 0;
+}
+
 
 void takePicture() {
-	CvCapture* capture = 0;
+  CvCapture* capture = 0;
   Mat frame, frameCopy, image;
-	Mat gray, cropped;
-	Mat canny;
+  Mat gray, cropped;
+  Mat canny;
 
   capture = cvCaptureFromCAM( -1 ); //0=default, -1=any camera, 1..99=your camera
 
-	if (!capture)
-	{
-		cout << "No camera detected" << endl;
-	}
+  if (!capture)
+  {
+    cout << "No camera detected" << endl;
+  }
 
-	cvNamedWindow("result", CV_WINDOW_AUTOSIZE);
+  cvNamedWindow("result", CV_WINDOW_AUTOSIZE);
 
-	if (capture)
-	{
-		cout << "In capture ..." << endl;
-		// for (;;)
-		// {
-		// 	IplImage* iplImg = cvQueryFrame( capture );
-		// 	frame = iplImg;
+  if (capture)
+  {
+    cout << "In capture ..." << endl;
+    // for (;;)
+    // {
+    //  IplImage* iplImg = cvQueryFrame( capture );
+    //  frame = iplImg;
 
-		// 	if ( frame.empty() )
-		// 		break;
-		// 	if ( iplImg->origin == IPL_ORIGIN_TL )
-		// 		frame.copyTo( frameCopy );
-		// 	else
-		// 		flip( frame, frameCopy, 0 );
+    //  if ( frame.empty() )
+    //    break;
+    //  if ( iplImg->origin == IPL_ORIGIN_TL )
+    //    frame.copyTo( frameCopy );
+    //  else
+    //    flip( frame, frameCopy, 0 );
 
-		// 	cvShowImage( "result", iplImg );
+    //  cvShowImage( "result", iplImg );
 
-		// 	if ( waitKey( 10 ) >= 0 )
-		// 		break;
-		// }
-		IplImage* iplImg = cvQueryFrame(capture);
-		cvShowImage("result", iplImg);
-		cvSaveImage("img.png", iplImg);
-		//waitKey(0);
-	}
+    //  if ( waitKey( 10 ) >= 0 )
+    //    break;
+    // }
+    IplImage* iplImg = cvQueryFrame(capture);
+    cvShowImage("result", iplImg);
+    cvSaveImage("img.png", iplImg);
+    //waitKey(0);
+  }
 
-	
-	cvReleaseCapture(&capture);
-	cvDestroyWindow("result");
+  
+  cvReleaseCapture(&capture);
+  cvDestroyWindow("result");
 }
 
 void findCircles() {
@@ -153,13 +171,13 @@ void findCircles() {
   
   // Reduce the noise so we avoid false circle detection
 /*  GaussianBlur(InputArray src, 
-  			   OutputArray dst,
-  			   Size ksize,
-  			   double sigmaX,
-  			   double sigmaY=0,
-  			   int borderType=BORDER_DEFAULT )
+           OutputArray dst,
+           Size ksize,
+           double sigmaX,
+           double sigmaY=0,
+           int borderType=BORDER_DEFAULT )
 
-  	Parameters:	
+    Parameters: 
 
     src – input image; the image can have any number of channels, which are processed independently, but the depth should be CV_8U, CV_16U, CV_16S, CV_32F or CV_64F.
     dst – output image of the same size and type as src.
@@ -195,7 +213,8 @@ void findCircles() {
       circle( src, center, radius, Scalar(0,0,255), 3, 8, 0 );// circle outline
       // circle( src, center, 3, Scalar(0,255,0), CV_FILLED, 8, 0 );// circle center     
       // circle( src, center, radius, Scalar(0,0,255), 3, 8, 0 );// circle outline
-      cout << "center : " << center << "\nradius : " << radius << endl;
+      cout << "center : " << center << "\tradius : " << radius << "\tcolor: " << checkColor(center) << endl;
+      
    }
  
   // Show your results
@@ -205,31 +224,21 @@ void findCircles() {
   waitKey(0);
 }
 
-void checkColor(Point center) {
+char checkColor(Point center) {
   int size = 10;
-  float sample = 0;
-  for (int i = 0; i < size; ++i)
+  float sample = 0, hue;
+  for (int i = 0; i < size/4; ++i)
   {
-    sample += src.at<Vec3b>(center + Point(size/2 - i, i);
-    sample += src.at<Vec3b>(center + Point(size/2 - i, -i);
+    sample += src.at<Vec3b>(center + Point(size/2 - i, i));
+    sample += src.at<Vec3b>(center + Point(size/2 - i, -i));
+    sample += src.at<Vec3b>(center + Point(-size/2 + i, i));
+    sample += src.at<Vec3b>(center + Point(-size/2 + i, -i));
   }
+  hue = sample/size;
   for (int i = 0; i < NUM_OF_COLORS-1; ++i)
   {
     if (hue > LIMITS[i])
       return COLORS[i];
   }
   return COLORS[NUM_OF_COLORS-1];
-}
-
-int main(int argc, const char** argv)
-{
-  for (int i = 0; i < NUM_OF_COLORS-1; ++i)
-  {
-    LIMITS[i] = (COLORS[i] - COLORS[i+1])/2.0 + COLORS[i+1];
-    cout << LIMITS[i] << endl;
-  }
-	// takePicture();
-	findCircles();
-
-	return 0;
 }
