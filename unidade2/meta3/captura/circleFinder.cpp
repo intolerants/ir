@@ -1,5 +1,12 @@
-// Ver em: http://hxr99.blogspot.com.br/2011/12/opencv-examples-camera-capture.html
+/*
+    UFRN 2016.1 - INTRODUCAO A ROBOTICA
+            HANOCH E TAYNARA
 
+  CAPTURA DE IMAGEM E DETECTCAO DE CIRCULOS
+*/
+
+
+// Ver em: http://hxr99.blogspot.com.br/2011/12/opencv-examples-camera-capture.html
 // -------------------------------------------------------------------------------
 //  OpenCV C/C++ Examples (Camera Capture)
 // There are also python implementation for camera capture and showing image.
