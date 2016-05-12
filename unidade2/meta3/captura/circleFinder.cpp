@@ -13,45 +13,7 @@
 using namespace std;
 using namespace cv;
 
-
-/*
-  Cor  : H   S  V
-  Verme: 352 41 83
-  Rosa : 312 47 77
-  Azul : 216 55 89
-  Ciano: 203 60 100
-  Verde: 153 41 77
-  Amare: 56  51 100
-  Cor       H     S     V
-  Vermelho  352   41    83
-            332   44    80
-  Rosa      312   47    77
-            264   51    83
-  Azul      216   55    89
-            209,5 57,5  94,5
-  Ciano     203   60    100
-            178   50,5  88,5
-  Verde     153   41    77
-            104,5 46    88,5
-  Amarelo   56    51    100
-
-  RED 175
-  PINK 155
-  BLUE 108
-  CIAN 103
-  GREEN 76
-  YELLOW 27
-  BLACK 136+26
-*/
-
-/*
-#define RED 352
-#define PINK 312
-#define BLUE 216
-#define CIAN 203
-#define GREEN 153
-#define YELLOW 56
-*/
+#define DEBUG 1
 
 #define RED 175
 #define PINK 155
@@ -69,22 +31,18 @@ char ANSWERS[NUM_OF_COLORS] = {'r', 'p', 'b', 'c', 'g', 'y'};
 float LIMITS[NUM_OF_COLORS-1];
 Mat src, srcHsv;
 void takePicture(void);
+void initFindCircles(void);
 void findCircles(void);
 char checkColor(Point center);
 
 int main(int argc, const char** argv)
 {
-  for (int i = 0; i < NUM_OF_COLORS-1; ++i)
-  {
-    LIMITS[i] = (COLORS[i] - COLORS[i+1])/2.0 + COLORS[i+1];
-    // cout << "Limits:" << LIMITS[i] << " Answer:" << ANSWERS[i] << " Colors:" << COLORS[i] << endl;
-  }
+  // initFindCircles();
 	// takePicture();
 	findCircles();
 
 	return 0;
 }
-
 
 void takePicture() {
   CvCapture* capture = 0;
@@ -130,7 +88,16 @@ void takePicture() {
   cvDestroyWindow("result");
 }
 
+void initFindCircles(void) {
+  for (int i = 0; i < NUM_OF_COLORS-1; ++i)
+  {
+    LIMITS[i] = (COLORS[i] - COLORS[i+1])/2.0 + COLORS[i+1];
+  }
+}
+
 void findCircles() {
+
+  initFindCircles();
   Mat gray;
   Mat canny;
 
@@ -142,7 +109,9 @@ void findCircles() {
   /*
     Cria retangulo para filtragem da area de trabalho
   */
-  Rect box = Rect(360, 170, 210, 180);
+  // Rect box = Rect(300, 57, 330, 400); //Vostro FOV workspace
+  Rect box = Rect(320, 157, 277, 200); //Vostro FOV scanner
+  // Rect box = Rect(360, 170, 210, 180); //Vostro FOV imagem
   // Rect box = Rect(360, 170, 200, 170);
   // Rect box = Rect(560, 260, 300, 260);
   
@@ -166,38 +135,45 @@ void findCircles() {
     Filtragem - Escurecer o amarelo
   */
   gray.convertTo(gray, -1, 1.3, -200);
-  // namedWindow("gray"); imshow("gray", gray);
-  // moveWindow("gray", 270, 0);
-
+  if (DEBUG) {
+    namedWindow("gray"); imshow("gray", gray);
+    moveWindow("gray", 270, 0);
+  }
   /*
     Filtragem - Escurecer o filtragem pre-canny contornos 
   */
   medianBlur(gray, gray, 3);
-  // namedWindow("blur"); imshow("blur", gray);
-  // moveWindow("blur", 270, 300);
+  if (DEBUG) {
+    namedWindow("blur"); imshow("blur", gray);
+    moveWindow("blur", 270, 300);
+  }
 
   /*
     Filtragem - Cria matriz de contornos 
   */
   Canny(gray, canny, 10, 140, 3, true);
-  // namedWindow("canny1"); imshow("canny1", canny > 0);
-  // moveWindow("canny1", 270*2, 0);
+  if (DEBUG) {
+    namedWindow("canny1"); imshow("canny1", canny > 0);
+    moveWindow("canny1", 270*2, 0);
+  }
 
   /*
     Filtragem - Aumenta bordas
   */
   blur(canny, canny, Size( 3, 3 ), Point(-1,-1));
-
-  // namedWindow("canny3"); imshow("canny3", canny > 0);
-  // moveWindow("canny3", 270*4, 0);
+  if (DEBUG) {
+    namedWindow("canny3"); imshow("canny3", canny > 0);
+    moveWindow("canny3", 270*4, 0);
+  }
 
   /*
     Filtragem - Suaviza imperfeicoes
   */
   medianBlur(canny, canny, 5);
-
-  // namedWindow("canny3Blur"); imshow("canny3Blur", canny > 0);
-  // moveWindow("canny3Blur", 270*4, 250);
+  if (DEBUG) {
+    namedWindow("canny3Blur"); imshow("canny3Blur", canny > 0);
+    moveWindow("canny3Blur", 270*4, 250);
+  }
   // moveWindow("canny3", 720+220, 0);
  
 
@@ -206,7 +182,10 @@ void findCircles() {
     Apply the Hough Transform to find the circles
   */
   vector<Vec3f> circles;
-  HoughCircles(canny, circles, CV_HOUGH_GRADIENT, 0.5, 30, 200, 50, 0, 0);
+  // HoughCircles(InputArray, OutputArray, int method, double dp, double minDist, double param1=100, double param2=100, int minRadius=0, int maxRadius=0 )
+  // HoughCircles(   canny,      circles,      CV_HOUGH_GRADIENT, 0.5,         0.1,                  100,               100,            0,                  0);
+  HoughCircles(canny, circles, CV_HOUGH_GRADIENT, 1, 40, 40, 30, 0, 50);
+  // HoughCircles(canny, circles, CV_HOUGH_GRADIENT, 0.5, 30, 200, 50, 0, 0);
  
   /*
     Draw the circles detected
