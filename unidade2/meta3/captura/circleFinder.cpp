@@ -34,21 +34,40 @@ using namespace cv;
   Verde     153   41    77
             104,5 46    88,5
   Amarelo   56    51    100
+
+  RED 175
+  PINK 155
+  BLUE 108
+  CIAN 103
+  GREEN 76
+  YELLOW 27
+  BLACK 136+26
 */
 
+/*
 #define RED 352
 #define PINK 312
 #define BLUE 216
 #define CIAN 203
 #define GREEN 153
 #define YELLOW 56
+*/
+
+#define RED 175
+#define PINK 155
+#define BLUE 108
+#define CIAN 103
+#define GREEN 76
+#define YELLOW 27
+
+#define BALCK_SATURATION 162
 
 #define NUM_OF_COLORS 6
 
 int COLORS[NUM_OF_COLORS] = {RED, PINK, BLUE, CIAN, GREEN, YELLOW};
 char ANSWERS[NUM_OF_COLORS] = {'r', 'p', 'b', 'c', 'g', 'y'};
 float LIMITS[NUM_OF_COLORS-1];
-Mat src;
+Mat src, srcHsv;
 void takePicture(void);
 void findCircles(void);
 char checkColor(Point center);
@@ -58,7 +77,7 @@ int main(int argc, const char** argv)
   for (int i = 0; i < NUM_OF_COLORS-1; ++i)
   {
     LIMITS[i] = (COLORS[i] - COLORS[i+1])/2.0 + COLORS[i+1];
-    //cout << LIMITS[i] << endl;
+    cout << "Limits:" << LIMITS[i] << " Answer:" << ANSWERS[i] << " Colors:" << COLORS[i] << endl;
   }
 	// takePicture();
 	findCircles();
@@ -130,12 +149,11 @@ void findCircles() {
   // Mat src = imread( "img.png", 1 );
   Mat src(image,box);
 
-  Mat color;
-  cvtColor(src, color, CV_BGR2RGB);
+  cvtColor(src, srcHsv, CV_BGR2HSV);
 
   // bilateralFilter( color, color, 15, 80, 80 );
-  namedWindow("color"); imshow("color", color);
-  moveWindow("color", 0, 250);
+  // namedWindow("color"); imshow("color", srcHsv);
+  // moveWindow("color", 0, 250);
 
 
   cvtColor(src, gray, CV_RGB2GRAY);
@@ -213,32 +231,63 @@ void findCircles() {
       circle( src, center, radius, Scalar(0,0,255), 3, 8, 0 );// circle outline
       // circle( src, center, 3, Scalar(0,255,0), CV_FILLED, 8, 0 );// circle center     
       // circle( src, center, radius, Scalar(0,0,255), 3, 8, 0 );// circle outline
-      cout << "center : " << center << "\tradius : " << radius << "\tcolor: " << checkColor(center) << endl;
+      cout << "center : " << center << "\tradius : " << radius << "\thue: " << checkColor(center) << "\tcolor: " << (int)srcHsv.at<Vec3b>(center).val[0] << " " << (int)srcHsv.at<Vec3b>(center).val[1] << " " << (int)srcHsv.at<Vec3b>(center).val[2] << endl;
       
    }
  
+  
+  src.at<Vec3b>(Point(52,56)).val[2] = 0;
+  src.at<Vec3b>(Point(52,56)).val[1] = 0;
   // Show your results
   namedWindow("src"); imshow("src", src);
   moveWindow("src", 0, 0);
 
+
+  namedWindow("color"); imshow("color", srcHsv);
+  moveWindow("color", 0, 250);
+
   waitKey(0);
 }
 
+
 char checkColor(Point center) {
-  int size = 10;
-  float sample = 0, hue;
-  for (int i = 0; i < size/4; ++i)
+  int size = 24;
+  int sample[3], hue, saturation;
+  char hueDebug;
+  for (int j = 0; j < 3; ++j)
   {
-    sample += src.at<Vec3b>(center + Point(size/2 - i, i));
-    sample += src.at<Vec3b>(center + Point(size/2 - i, -i));
-    sample += src.at<Vec3b>(center + Point(-size/2 + i, i));
-    sample += src.at<Vec3b>(center + Point(-size/2 + i, -i));
+    sample[j] = 0;
+    for (int i = 0; i < size/4; ++i)
+    {
+      sample[j] += (int)srcHsv.at<Vec3b>(center + Point(size/2 - i, i)).val[j];
+      // srcHsv.at<Vec3b>(center + Point(size/4  - i, i)).val[2] = 0;
+      // srcHsv.at<Vec3b>(center + Point(size/4  - i, i)).val[1] = 0;
+      // cout << i << ") " << center + Point(size/4  - i, i) ;//<< (int)srcHsv.at<Vec3b>(center + Point(size/4  - i, i)).val[j] << " ";
+      sample[j] += (int)srcHsv.at<Vec3b>(center + Point(size/4  - i, -i)).val[j];
+      // srcHsv.at<Vec3b>(center + Point(size/4  - i, -i)).val[2] = 0;
+      // srcHsv.at<Vec3b>(center + Point(size/4  - i, -i)).val[1] = 0;
+      // cout << i << ") " << center + Point(size/4  - i, -i) ;//<< (int)srcHsv.at<Vec3b>(center + Point(size/4  - i, -i)).val[j] << " ";
+      sample[j] += (int)srcHsv.at<Vec3b>(center + Point(-size/4  + i, i)).val[j];
+      // srcHsv.at<Vec3b>(center + Point(-size/4  + i, i)).val[2] = 0;
+      // srcHsv.at<Vec3b>(center + Point(-size/4  + i, i)).val[1] = 0;
+      // cout << i << ") " << center + Point(-size/4  + i, i) ;//<< (int)srcHsv.at<Vec3b>(center + Point(-size/4  + i, i)).val[j] << " ";
+      sample[j] += (int)srcHsv.at<Vec3b>(center + Point(-size/4  + i, -i)).val[j];
+      // srcHsv.at<Vec3b>(center + Point(-size/4  + i, -i)).val[2] = 0;
+      // srcHsv.at<Vec3b>(center + Point(-size/4  + i, -i)).val[1] = 0;
+      // cout << i << ") " << center + Point(-size/4  + i, -i) ;//<< (int)srcHsv.at<Vec3b>(center + Point(-size/4  + i, -i)).val[0] << " ";
+
+    }
   }
-  hue = sample/size;
+    hue = sample[0]/size;
+    saturation = sample[2]/size;
+  // cout << "Hue: " << hue << endl;
+
   for (int i = 0; i < NUM_OF_COLORS-1; ++i)
   {
-    if (hue > LIMITS[i])
-      return COLORS[i];
+    if (saturation < BALCK_SATURATION)
+      return 't'; // tool
+    else if (hue > LIMITS[i])
+      return ANSWERS[i];
   }
-  return COLORS[NUM_OF_COLORS-1];
+  return ANSWERS[NUM_OF_COLORS-1];
 }
