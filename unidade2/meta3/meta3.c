@@ -426,9 +426,9 @@ void calc_senses() {
     sense[0] = -(teta[0] / 0.1041667 - 636 - 28);
 
     /* Calibracao manual*/
-    sense[1] = teta[1]/0.1142132 - 32 + 712;
-    sense[2] = -((teta[2]+180)/0.1209677 - 2256 - 172);
-    sense[3] = (teta[3]+90)/0.0982533 + 4 + 584;
+    // sense[1] = teta[1]/0.1142132 - 32 + 712;
+    // sense[2] = -((teta[2]+180)/0.1209677 - 2256 - 172);
+    // sense[3] = (teta[3]+90)/0.0982533 + 4 + 584;
 
     /* Calibracao por regressao linear */
     // sense[1] = 762.684+7.948*teta[1];
@@ -449,7 +449,31 @@ void calc_senses() {
     // sense[1] = 680.022+8.755*teta[1];
     // sense[2] = 939.983-8.267*teta[2];
     // sense[3] = 1503.969+10.18*teta[3];
+    double coefInv[3][5];
+    coefInv[0][0] = -0.000001676165598;
+    coefInv[0][1] = 0.000554098386724;
+    coefInv[0][2] = -0.064654313159402;
+    coefInv[0][3] = 4.156203210856024;
+    coefInv[0][4] = -54.561272505806777;
 
+    coefInv[1][0] = -0.000000447544523;
+    coefInv[1][1] = -0.000174223814470;
+    coefInv[1][2] = -0.023946785789062;
+    coefInv[1][3] = -0.434522263998477;
+    coefInv[1][4] = -34.454686259087616;
+
+    coefInv[2][0] = 0.003361997789151;
+    coefInv[2][1] = -0.117787433987822;
+    coefInv[2][2] = 0.425746690814517;
+    coefInv[2][3] = 14.381023097945977;
+    coefInv[2][4] = -57.090420720954377;
+
+    int i, j;
+    for (i = 0; i < 3; i++){
+        sense[i+1] = 0;
+        for (j = 0; j < 5; j++)
+            sense[i+1] += coefInv[i][j]*pow(teta[i+1], 4-j);
+    }
 }
 
 void move(float x, float y, float z, float phi) {
