@@ -424,7 +424,7 @@ void send_command(void) {
 }
  
 void make_and_send_command(void){
-    sprintf(comando, "#0P%uS300#1P%uS300#2P%uS300#3P%uS300\n", (unsigned int)sense[0], (unsigned int)sense[1], (unsigned int)sense[2], (unsigned int)sense[3]);
+    sprintf(comando, "#0P%uS500#1P%uS500#2P%uS500#3P%uS500\n", (unsigned int)sense[0], (unsigned int)sense[1], (unsigned int)sense[2], (unsigned int)sense[3]);
     send_command();
 }
  

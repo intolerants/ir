@@ -395,9 +395,9 @@ void rad2deg(float *ang){
  
 void calc_tetas(float x, float y, float z, float phi) {
     int i;
+    // printf("\nCALC_TESTAS - x:%.2f y:%.2f z:%.2f phi%.2f\n", x, y, z, phi);
     phi *= PI/180;
     float exy = sqrt(pow(x,2) + pow(y,2));
-    printf("\nCALC_TESTAS - x:%.2f y:%.2f z:%.2f phi%.2f\n", x, y, z, phi);
     teta[0] = atan2(y/exy, x/exy);
     float x14 = exy - L4*cos(phi);
     float z14 = z - L1 - L4*sin(phi);
@@ -410,7 +410,7 @@ void calc_tetas(float x, float y, float z, float phi) {
     float beta = atan2(sin(teta[2])*L3/exz14, (L2 + L3*c3)/exz14);
     teta[1] = alpha - beta;
     teta[3] = phi - teta[1] - teta[2];
-    printf("\nexy:%.2f x14:%.2f s3sqrt:%.2f exz14:%.2f\n",exy,x14,1-pow(c3,2),exz14);
+    // printf("\nexy:%.2f x14:%.2f s3sqrt:%.2f exz14:%.2f\n",exy,x14,1-pow(c3,2),exz14);
     for (i = 0; i < 4; i++){
         rad2deg(&teta[i]);
     }
@@ -419,9 +419,9 @@ void calc_tetas(float x, float y, float z, float phi) {
 void calc_senses(){
     /* Calibracao manual*/
     sense[0] = -(teta[0]/0.1041667 - 636 - 28);
-    // sense[1] = teta[1]/0.1142132 - 32 + 712;
-    // sense[2] = -((teta[2]+180)/0.1209677 - 2256 - 172);
-    // sense[3] = (teta[3]+90)/0.0982533 + 4 + 584;
+    sense[1] = teta[1]/0.1142132 - 32 + 712;
+    sense[2] = -((teta[2]+180)/0.1209677 - 2256 - 172);
+    sense[3] = (teta[3]+90)/0.0982533 + 4 + 584;
 
     /* Calibracao por regressao linear */
     // sense[1] = 762.684+7.948*teta[1];
@@ -434,9 +434,9 @@ void calc_senses(){
     // sense[3] = 10.6*teta[3] + 1461.8;
 
     /* Calibracao de quarta ordem */
-    sense[1] = -9.16283572805788*pow(10,-06)*pow(teta[1], 4) + 0.00249238051918379*pow(teta[1], 3) - 0.220292028854092*pow(teta[1], 2) + 14.8408844789694*teta[1] + 712.940479709510;
-    sense[2] = 2.95031078343459*pow(10,-06)*pow(teta[2], 4) + 0.00133012241558227*pow(teta[2], 3) + 0.204563648896187*pow(teta[2], 2) + 3.35185281794406*teta[2] + 1113.04750020549;
-    sense[3] = -0.0485371397804810*pow(teta[3], 4) + 3.17374947124019*pow(teta[3], 3) - 74.7891701648607*pow(teta[3], 2) + 758.694940993243*teta[3] - 1195.19947031368;
+    // sense[1] = -9.16283572805788*pow(10,-06)*pow(teta[1], 4) + 0.00249238051918379*pow(teta[1], 3) - 0.220292028854092*pow(teta[1], 2) + 14.8408844789694*teta[1] + 712.940479709510;
+    // sense[2] = 2.95031078343459*pow(10,-06)*pow(teta[2], 4) + 0.00133012241558227*pow(teta[2], 3) + 0.204563648896187*pow(teta[2], 2) + 3.35185281794406*teta[2] + 1113.04750020549;
+    // sense[3] = -0.0485371397804810*pow(teta[3], 4) + 3.17374947124019*pow(teta[3], 3) - 74.7891701648607*pow(teta[3], 2) + 758.694940993243*teta[3] - 1195.19947031368;
 
 }
 
