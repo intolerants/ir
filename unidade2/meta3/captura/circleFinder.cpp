@@ -87,7 +87,8 @@ void takePicture() {
 
       int numOfCircles = findCircles();
       if ( waitKey( 10 ) >= 0 || numOfCircles == 7)
-        break;
+        if (!DEBUG)
+          break;
       cout << " =========== AGAIN ============\n\n";
     }
     /*IplImage* iplImg = cvQueryFrame(capture);

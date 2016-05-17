@@ -391,7 +391,7 @@ void make_and_send_command(void){
  
 void rad2deg(float *ang){
     *ang *= 180/PI;
-}
+}zz
  
 void calc_tetas(float x, float y, float z, float phi) {
     int i;
