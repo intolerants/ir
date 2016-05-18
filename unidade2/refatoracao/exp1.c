@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include <inttypes.h> // erro no malloc
 
@@ -51,6 +52,10 @@
 /*USED*/
 #define STEP 0.5
 #define NTETAS 5
+#define fmax(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a > _b ? _a : _b; })
 
 // HOME_POS
 // sense[0] = 1528;
@@ -103,6 +108,9 @@ void pega_piloto(void);
 void desenha(int *bolas, int n);
 void magica(void);
 void read_coords(void);
+double pixelX2cmY(double x);
+double pixelY2cmX(double x);
+
 
 int main()
 {
@@ -495,7 +503,8 @@ void move_step_by_step(double x, double y, double z, double phi) {
     int i;
 
     // interpola o movimento
-    int steps = 10;
+    int diffs[3] = {fabs(x - X), fabs(y - Y), fabs(z - Z)};
+    int steps = fmax(1, fmax(diffs[0], fmax(diffs[1], diffs[2])));
     double stepSize[3] = {(x - X)/steps, (y - Y)/steps, (z - Z)/steps};
     for (i = 0; i < steps; ++i)
     {
@@ -503,7 +512,7 @@ void move_step_by_step(double x, double y, double z, double phi) {
         Y += stepSize[1];
         Z += stepSize[2];
         move(X, Y, Z, phi);
-        usleep(200000);
+        usleep(150000);
     }
 }
 void pega() {
@@ -607,14 +616,19 @@ void magica() {
     FILE* file = fopen("pos.txt", "r");
     char line[256];
     while (fgets(line, sizeof(line), file)) {
-        // if(sscanf(line, "%d %d %c", &alvo[j][0], &alvo[j][1], &alvo[j][2]));
+        if(sscanf(line, "%d %d %d", &alvo[j][0], &alvo[j][1], &alvo[j][2]));
+        alvo[j][0] = pixelX2cmY(alvo[j][0]);
+        alvo[j][1] = pixelY2cmX(alvo[j][1]);
+        move_step_by_step(alvo[j][1], -alvo[j][0], 13, 0);
+        sleep(2);
         j++;
     }
     for (i = 0; i < j; ++i)
     {
         printf("%d) %d %d %c\n", i, alvo[i][0], alvo[i][1], (char)alvo[i][2]);
     }
-    pega_piloto();
+    //pega_piloto();
+
 }
 
 void read_coords() {
@@ -630,4 +644,12 @@ void read_coords() {
     if (scanf("%lf", &z));
     printf("phi: ");
     if (scanf("%lf", &phi));
+}
+
+double pixelX2cmY(double x) {
+    return 0.11201*x + 7.65223;
+}
+
+double pixelY2cmX(double x) {
+    return -0.12608*x + 23.18324;
 }
