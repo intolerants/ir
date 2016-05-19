@@ -5,8 +5,8 @@
 /*   DRIVER DO BRAÇO ROBÓTICO LYNX AL5D PARA A PORTA SERIAL  */
 /*                               */
 /*   DESENVOLVEDORES:                        */
-/*  - ENG. M.SC. DESNES AUGUSTO NUNES DO ROSÁRIO         */
-/*  - ENG. DANILO CHAVES DE SOUSA ICHIHARA           */
+/*  - HANOCH         */
+/*  - TAYNARA           */
 /*************************************************************/
  
 #include <stdio.h>
