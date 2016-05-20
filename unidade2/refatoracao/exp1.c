@@ -107,8 +107,8 @@ void posaParaFoto(void);
 void pega_piloto(void);
 void desenha(int *bolas, int n);
 void magica(void);
-void pega_piloto_custom(int alvo[7][3]);
-void desenha_targets(int alvo[][3], int *bolas, int n_bolas);
+void pega_piloto_custom(double alvo[7][3]);
+void desenha_targets(double alvo[][3], int *bolas, int n_bolas);
 void read_coords(void);
 void read_bolas(int *bolas, int *n_bolas);
 double pixelX2cmY(double x);
@@ -316,8 +316,11 @@ int main()
             } else if (c == 'n') {
                 read_coords();
                 move_step_by_step(x, y, z, phi);
+            } else if (c == 'l') {
+                solta();
+                sleep(3);
+                posaParaFoto();
             }
-
             if (enviar_comando(comando, serial_fd) != -1)
             {
                 printf("\nEnviando de comando.\n");
@@ -506,30 +509,39 @@ void move(double x, double y, double z, double phi) {
 }
 
 void move_step_by_step(double x, double y, double z, double phi) {
-    printf("\nORIGEN TO-> - X:%.2lf Y:%.2lf Z:%.2lf phi%.2lf\n", X, Y, Z, phi);
-    printf("\nMOVE-STEP-BY-STEP TO-> - x:%.2lf y:%.2lf z:%.2lf phi%.2lf\n", x, y, z, phi);
-    int i;
 
     // interpola o movimento
     //z += (0.031400685275072*pow(y,2) + 1.965132928224196*y + 41.678905898998096) - 13;
     // z +=  (0.12608*y+16.03803) - 13;
+    printf("_____________________\nz:%.2lf\n",z);
     if (y < -24){
-        if (y < -32)
-            z += -2;
+        if (y < -28)
+            z += -2.5;
         else if (y < -25)
+            z += -1.3;
+        else if (y < -21)
             z += -1;
     }
+    printf("\nORIGEN TO-> - X:%.2lf Y:%.2lf Z:%.2lf phi%.2lf\n", X, Y, Z, phi);
+    printf("\nMOVE-STEP-BY-STEP TO-> - x:%.2lf y:%.2lf z:%.2lf phi%.2lf\n", x, y, z, phi);
+    int i;
     int diffs[3] = {fabs(x - X), fabs(y - Y), fabs(z - Z)};
     int steps = fmax(1, fmax(diffs[0], fmax(diffs[1], diffs[2])));
-    steps *= 2;
+    steps *= 16;
     double stepSize[3] = {(x - X)/steps, (y - Y)/steps, (z - Z)/steps};
+    printf("\nSTEPSIZE-> - X:%.2lf Y:%.2lf Z:%.2lf\n\n", stepSize[0], stepSize[1], stepSize[2]);
     for (i = 0; i < steps; ++i)
     {
         X += stepSize[0];
         Y += stepSize[1];
         Z += stepSize[2];
         move(X, Y, Z, phi);
-        usleep(75000);
+        // usleep(10000);
+        usleep(30000);
+        // usleep(50000);
+        // usleep(75000);
+        // 7 p r b c g y p
+        // 7 r p c b y g r
     }
 }
 void pega() {
@@ -629,36 +641,38 @@ void magica() {
     if (system("./captura/circleFinder"));
 
     int alvo[7][3];
+    double alvoPrecision[7][3];
     int j = 0;
     FILE* file = fopen("pos.txt", "r");
     char line[256];
     while (fgets(line, sizeof(line), file)) {
         // if(sscanf(line, "%d %d %c", &alvo[j][0], &alvo[j][1], &letras[j]));
         if(sscanf(line, "%d %d %c", &alvo[j][0], &alvo[j][1], &alvo[j][2]));
-        alvo[j][0] = -pixelX2cmY(alvo[j][0]);
-        alvo[j][1] = pixelY2cmX(alvo[j][1]);
+        alvoPrecision[j][0] = -pixelX2cmY(alvo[j][0]);
+        alvoPrecision[j][1] = pixelY2cmX(alvo[j][1]);
+        alvoPrecision[j][2] = alvo[j][2];
         // move_step_by_step(alvo[j][1], -alvo[j][0], 13, 0);
         // sleep(3);
         j++;
     }
     for (j = 0; j < 7; ++j)
     {
-        printf("%d) %d %d %c\n", j, alvo[j][0], alvo[j][1], alvo[j][2]);
+        printf("%d) %lf %lf %c\n", j, alvoPrecision[j][0], alvoPrecision[j][1], (char)alvoPrecision[j][2]);
         // printf("%d) %d %d %c\n", j, alvo[j][0], alvo[j][1], letras[j]);
     }
     int *bolas, n_bolas, i;
 
     printf("\nDigite quantas bolinhas:\n");
-    //if (scanf("%d", &n_bolas));
-    n_bolas = 7;
+    if (scanf("%d", &n_bolas));
+    // n_bolas = 7;
     bolas = ((int*) malloc(n_bolas * sizeof(int)));
     
     read_bolas(bolas, &n_bolas);
 
-    desenha_targets(alvo, bolas, n_bolas);
+    desenha_targets(alvoPrecision, bolas, n_bolas);
 }
 
-void desenha_targets(int alvo[][3], int *bolas, int n_bolas) {
+void desenha_targets(double alvo[][3], int *bolas, int n_bolas) {
     int i, j;
     pega_piloto_custom(alvo);
     for (i = 0; i < n_bolas; i++){
@@ -671,13 +685,13 @@ void desenha_targets(int alvo[][3], int *bolas, int n_bolas) {
         }
     }
 }
-void pega_piloto_custom(int alvo[7][3]) {
+void pega_piloto_custom(double alvo[7][3]) {
     move(0, -26.8, 20.9, 0);
 
     int i = 0;
     for (i = 0; i < 7; ++i)
     {
-        printf("%d) %d %d %c\n", i, alvo[i][0], alvo[i][1], (char)alvo[i][2]);
+        printf("%d) %lf %lf %c\n", i, alvo[i][0], alvo[i][1], (char)alvo[i][2]);
     }
         // p r b y c g
     sleep(3);
@@ -699,14 +713,17 @@ void pega_piloto_custom(int alvo[7][3]) {
     solta();
     printf("Descendo...\n");
     sleep(1);
-    move_step_by_step(alvo[i][1], alvo[i][0], 12.5, 0);
+    move_step_by_step(alvo[i][1], alvo[i][0], 14.9, 0);
     printf("Fechando garra...\n");
     sleep(2);
     pega();
     printf("Subindo com o piloto...\n");
     sleep(1);
-    move_step_by_step(alvo[i][1], alvo[i][0], 25, 0);
+    move_step_by_step(alvo[i][1], alvo[i][0], 25, 5);
     sleep(2);
+    move_step_by_step(0, -26.8, 25, 0);
+    sleep(2);
+
 }
 
 void read_coords() {
@@ -732,10 +749,10 @@ void read_bolas(int *bolas, int *n_bolas) {
     // bolas = ((int*) malloc(*n_bolas * sizeof(int)));
     printf("\nDigite a ordem das bolinhas:\n");
     printf("\n(p)ink\n(r)ed\n(b)lue\n(c)yan\n(g)reen\n(y)ellow\n");
-    char resposta[7] = {'r', 'c', 'y', 'p', 'g', 'b', 'r'};
+    // char resposta[7] = {'r', 'c', 'y', 'p', 'g', 'b', 'r'};
     for (i = 0; i < *n_bolas; i++)
-        //if (scanf("%d", &bolas[i]));
-        bolas[i] = resposta[i];
+        if (scanf(" %c", &bolas[i]));
+        // bolas[i] = resposta[i];
 }
 
 double pixelX2cmY(double x) {
