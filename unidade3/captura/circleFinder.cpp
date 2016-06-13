@@ -57,7 +57,7 @@ Point windowPos(void) {
 
 void showWindow(Mat m, string s)
 {
-		namedWindow(s, CV_WINDOW_OPENGL);
+		namedWindow(s, WINDOW_FREERATIO);
 		imshow(s, m);
 		resizeWindow(s, 100,100);
 		pTemp = windowPos();
