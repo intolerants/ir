@@ -1,10 +1,11 @@
 # compiler
 CC :=g++
 # include files
-CFLAGS :=`pkg-config opencv --cflags` `pkg-config opencv --libs`
+CFLAGS :=`pkg-config opencv --cflags` `pkg-config opencv --libs` `lm`
 LDFLAGS :=
 # compile all c++ files in dir
-SOURCES :=$(wildcard *.cpp)
+# SOURCES :=$(wildcard *.cpp *.c)
+SOURCES :=meta1.cpp al5d.c circleFinder.cpp
 # C++ files .cpp removed file is executable
 EXECUTABLE :=$(SOURCES:.cpp=)
 
