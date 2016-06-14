@@ -10,7 +10,7 @@
 //  OpenCV C/C++ Examples (Camera Capture)
 // There are also python implementation for camera capture and showing image.
 
-// Compile and run: g++ circleFinder.cpp `pkg-config opencv --cflags` `pkg-config opencv --libs` -o circleFinder && ./circleFinder 
+// Compile and run: g++ circleFinder.cpp `pkg-config opencv --cflags` `pkg-config opencv --libs` -o circleFinder && ./circleFinder
 
 
 #include <opencv2/objdetect/objdetect.hpp>
@@ -21,6 +21,7 @@
 #include <stdlib.h>
 
 
+#define CONTRAST_CALIBRATION 1
 #define DEBUG 1
 #define BLUE 178
 #define YELLOW 154
@@ -79,7 +80,7 @@ void showWindow(Mat m, string s)
 void drawMap(void) {
 	// src.copyTo(workMap);
 	workMap.convertTo(workMap, -1, 1, 120);
-	rectangle(workMap, Rect(2,60,325,227), Scalar(0, 0, 255), 2);
+	rectangle(workMap, Rect(2, 60, 325, 227), Scalar(0, 0, 255), 2);
 	for (int i = 0; i < NUM_OF_ELEMENTS; i++)
 	{
 		if (elementKind[i] == 'w') {
@@ -91,7 +92,7 @@ void drawMap(void) {
 			if (elementKind[i] == 'e')
 				centerColor = Scalar(255, 0, 0); //BGR end = blue
 			else if (elementKind[i] == 'b')
-				centerColor = Scalar(0, 255, 255); //BGR begin = yellow
+				centerColor = Scalar(0, 255, 254); //BGR begin = yellow
 
 			circle( workMap, element[i], 3, centerColor, -1, 8, 0 ); // circle center
 		}
@@ -172,215 +173,218 @@ void initFindCircles(void) {
 }
 
 int findCircles() {
-
-	// while (1) {
-	// initFindCircles();
-	Mat gray;
-	Mat canny;
-
-	/*
-	  Transform it into the C++ cv::Mat format
-	*/
-	image = imread("1eComFundo.jpg", 1);
-
-	/*
-	  Cria retangulo para filtragem da area de trabalho
-	*/
-	// Rect box = Rect(300, 57, 330, 400); //Vostro FOV workspace
-	box = Rect(300, 50, 330, 400); //LAB FOV workspace
-	// Rect box = Rect(320, 157, 277, 200); //Vostro FOV scanner
-	// Rect box = Rect(360, 170, 210, 180); //Vostro FOV imagem
-	// Rect box = Rect(360, 170, 200, 170);
-	// Rect box = Rect(560, 260, 300, 260);
-
-	/*
-	  Setup a rectangle to define your region of interest
-	*/
-	Mat src(image, box);
-	detectionMap = src.clone();
-	// workMap = src.clone();
-	src.copyTo(workMap);
-
-	//cvtColor(src, src, CV_8U);
-
-	/*
-	  Carrega a matriz para o reconhecimento de cores
-	*/
-	srcHsv = src.clone();
-	medianBlur(srcHsv, srcHsv, 11);
-	srcHsv.convertTo(srcHsv, -1, 1.2, -70);
-	cvtColor(src, srcHsv, COLOR_BGR2HSV);
-	medianBlur(srcHsv, srcHsv, 11);
-
-
-#ifdef DEBUG
-	showWindow(srcHsv, "srcHsv0");
-#endif
-	/*
-	  Carrega a matriz para o reconhecimento dos circulos
-	*/
-	cvtColor(src, gray, CV_RGB2GRAY);
-	// cvtColor( src, gray, CV_BGR2GRAY );
-
-	/*
-	  Filtragem - Escurecer o amarelo
-	*/
-	// gray.convertTo(gray, -1, 1.3, -200);
-	Mat graySource;
-	cvtColor(src, graySource, CV_RGB2GRAY);
-	graySource.convertTo(graySource, -1, 2.6, -300);
-	medianBlur(graySource, graySource, 11);
-
-
-	// blur(gray, gray, Size( 5, 5 ), Point(-11, -11));
-	// medianBlur(gray, gray, 7);
-	medianBlur(gray, gray, ablur);
-	gray.convertTo(gray, -1, contrast, brightness);
-	// contrast:2.6 brightness:-260 blur:11
-
-#ifdef DEBUG
-	showWindow(gray, "gray");
-	showWindow(graySource, "graySource");
-#endif
-	/*
-	  Filtragem - Escurecer o filtragem pre-canny contornos
-	*/
-
-	// bitwise_or(graySource, gray, gray);
-
-
-#ifdef DEBUG
-	showWindow(gray, "blur");
-#endif
-
-	/*
-	  Filtragem - Cria matriz de contornos
-	*/
-	Canny(gray, canny, 10, 140, 3, true);
-#ifdef DEBUG
-	showWindow(canny, "canny1");
-#endif
-
-	/*
-	  Filtragem - Aumenta bordas
-	*/
-	blur(canny, canny, Size( 3, 3 ), Point(-1, -1));
-#ifdef DEBUG
-	showWindow(canny, "canny3");
-#endif
-
-	/*
-	  Filtragem - Suaviza imperfeicoes
-	*/
-	medianBlur(canny, canny, 5);
-#ifdef DEBUG
-	showWindow(canny, "canny3Blur");
-#endif
-	// moveWindow("canny3", 720+220, 0);
-
-
-
-	/*
-	  Apply the Hough Transform to find the circles
-	*/
 	vector<Vec3f> circles;
-	// HoughCircles(InputArray, OutputArray, int method, double dp, double minDist, double param1=100, double param2=100, int minRadius=0, int maxRadius=0 )
-	// HoughCircles(   canny,      circles,      CV_HOUGH_GRADIENT, 0.5,         0.1,                  100,               100,            0,                  0);
-	HoughCircles(canny, circles, CV_HOUGH_GRADIENT, 1, 40, 40, 30, 5, 50);
-	// HoughCircles(canny, circles, CV_HOUGH_GRADIENT, 0.5, 30, 200, 50, 0, 0);
 
-
-	// openFile();
-	system("rm pos.txt");
-	system("cat /dev/null > pos.txt");
-
-	FILE *file = fopen("pos.txt", "a");
-	if (file == NULL)
-	{
-		printf("Error opening file!\n");
-		exit(1);
-	}
-
-	/*
-	  Draw the circles detected
-	*/
-	detectionMap.convertTo(detectionMap, -1, 1, 120);
-
-	char idCircle;
-	for (size_t i = 0; i < circles.size(); i++)
-	{
-		Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
-		int radius = cvRound(circles[i][2]);
-
-		idCircle = checkColor(center); //find color
-#ifdef DEBUG
-		cout << "center : " << center << "\tradius : " << radius << "\thue: " << idCircle << "\tcolor: " << (int)srcHsv.at<Vec3b>(center).val[0] << " " << (int)srcHsv.at<Vec3b>(center).val[1] << " " << (int)srcHsv.at<Vec3b>(center).val[2] << endl;
+#ifdef CONTRAST_CALIBRATION
+	while (1) {
 #endif
-		fprintf(file, "%d %d %c\n", center.x, center.y, idCircle);
-		// circle( detectionMap, center, 3, Scalar(0, 255, 0), -1, 8, 0 ); // circle center
-		// circle( detectionMap, center, radius, Scalar(0, 0, 255), -1, -1, 0 ); // circle outline
-		if (idCircle == 'w') {
-			// circle( workMap, element[i], RADIUS, Scalar(0, 0, 255), 3, 8, 0 ); // circle outline
-			circle( detectionMap, center, radius, Scalar(0, 0, 255), -1, -1, 0 ); // circle outline
-			// circle( workMap, element[i], RADIUS, Scalar(0, 0, 255), -1, -1, 0 ); // circle outline
-		} else if (idCircle == 'e') {
-			circle( detectionMap, center, 3, Scalar(255, 0, 0), -1, -1, 0 ); // circle outline
-		} else if (idCircle == 'b') {
-			circle( detectionMap, center, RADIUS/2, Scalar(0, 255, 255), -1, -1, 0 ); // circle outline
 
+		// initFindCircles();
+		Mat gray;
+		Mat canny;
+
+		/*
+		  Transform it into the C++ cv::Mat format
+		*/
+		image = imread("1eComFundo.jpg", 1);
+
+		/*
+		  Cria retangulo para filtragem da area de trabalho
+		*/
+		// Rect box = Rect(300, 57, 330, 400); //Vostro FOV workspace
+		box = Rect(300, 50, 330, 400); //LAB FOV workspace
+		// Rect box = Rect(320, 157, 277, 200); //Vostro FOV scanner
+		// Rect box = Rect(360, 170, 210, 180); //Vostro FOV imagem
+		// Rect box = Rect(360, 170, 200, 170);
+		// Rect box = Rect(560, 260, 300, 260);
+
+		/*
+		  Setup a rectangle to define your region of interest
+		*/
+		Mat src(image, box);
+		detectionMap = src.clone();
+		// workMap = src.clone();
+		src.copyTo(workMap);
+
+		//cvtColor(src, src, CV_8U);
+
+		/*
+		  Carrega a matriz para o reconhecimento de cores
+		*/
+		srcHsv = src.clone();
+		medianBlur(srcHsv, srcHsv, 11);
+		srcHsv.convertTo(srcHsv, -1, 1.2, -70);
+		cvtColor(src, srcHsv, COLOR_BGR2HSV);
+		medianBlur(srcHsv, srcHsv, 11);
+
+
+#ifdef DEBUG
+		showWindow(srcHsv, "srcHsv0");
+#endif
+		/*
+		  Carrega a matriz para o reconhecimento dos circulos
+		*/
+		cvtColor(src, gray, CV_RGB2GRAY);
+		// cvtColor( src, gray, CV_BGR2GRAY );
+
+		/*
+		  Filtragem - Escurecer o amarelo
+		*/
+		// gray.convertTo(gray, -1, 1.3, -200);
+		Mat graySource;
+		cvtColor(src, graySource, CV_RGB2GRAY);
+		graySource.convertTo(graySource, -1, 2.6, -300);
+		medianBlur(graySource, graySource, 11);
+
+
+		// blur(gray, gray, Size( 5, 5 ), Point(-11, -11));
+		// medianBlur(gray, gray, 7);
+		medianBlur(gray, gray, ablur);
+		gray.convertTo(gray, -1, contrast, brightness);
+		// contrast:2.6 brightness:-260 blur:11
+
+#ifdef DEBUG
+		showWindow(gray, "gray");
+		showWindow(graySource, "graySource");
+#endif
+		/*
+		  Filtragem - Escurecer o filtragem pre-canny contornos
+		*/
+
+		// bitwise_or(graySource, gray, gray);
+
+
+#ifdef DEBUG
+		showWindow(gray, "blur");
+#endif
+
+		/*
+		  Filtragem - Cria matriz de contornos
+		*/
+		Canny(gray, canny, 10, 140, 3, true);
+#ifdef DEBUG
+		showWindow(canny, "canny1");
+#endif
+
+		/*
+		  Filtragem - Aumenta bordas
+		*/
+		blur(canny, canny, Size( 3, 3 ), Point(-1, -1));
+#ifdef DEBUG
+		showWindow(canny, "canny3");
+#endif
+
+		/*
+		  Filtragem - Suaviza imperfeicoes
+		*/
+		medianBlur(canny, canny, 5);
+#ifdef DEBUG
+		showWindow(canny, "canny3Blur");
+#endif
+		// moveWindow("canny3", 720+220, 0);
+
+
+
+		/*
+		  Apply the Hough Transform to find the circles
+		*/
+		// HoughCircles(InputArray, OutputArray, int method, double dp, double minDist, double param1=100, double param2=100, int minRadius=0, int maxRadius=0 )
+		// HoughCircles(   canny,      circles,      CV_HOUGH_GRADIENT, 0.5,         0.1,                  100,               100,            0,                  0);
+		HoughCircles(canny, circles, CV_HOUGH_GRADIENT, 1, 40, 40, 30, 5, 50);
+		// HoughCircles(canny, circles, CV_HOUGH_GRADIENT, 0.5, 30, 200, 50, 0, 0);
+
+
+		// openFile();
+		system("rm pos.txt");
+		system("cat /dev/null > pos.txt");
+
+		FILE *file = fopen("pos.txt", "a");
+		if (file == NULL)
+		{
+			printf("Error opening file!\n");
+			exit(1);
 		}
-		element[i] = center;
-		elementKind[i] = idCircle;
-	}
 
-	fclose(file);
+		/*
+		  Draw the circles detected
+		*/
+		detectionMap.convertTo(detectionMap, -1, 1, 120);
 
-	// Show your results
+		char idCircle;
+		for (size_t i = 0; i < circles.size(); i++)
+		{
+			Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
+			int radius = cvRound(circles[i][2]);
+
+			idCircle = checkColor(center); //find color
 #ifdef DEBUG
-	showWindow(detectionMap, "Espaço de trabalho");
+			cout << "center : " << center << "\tradius : " << radius << "\thue: " << idCircle << "\tcolor: " << (int)srcHsv.at<Vec3b>(center).val[0] << " " << (int)srcHsv.at<Vec3b>(center).val[1] << " " << (int)srcHsv.at<Vec3b>(center).val[2] << endl;
 #endif
-	imwrite( "./circulos.png", detectionMap );
+			fprintf(file, "%d %d %c\n", center.x, center.y, idCircle);
+			// circle( detectionMap, center, 3, Scalar(0, 255, 0), -1, 8, 0 ); // circle center
+			// circle( detectionMap, center, radius, Scalar(0, 0, 255), -1, -1, 0 ); // circle outline
+			if (idCircle == 'w') {
+				// circle( workMap, element[i], RADIUS, Scalar(0, 0, 255), 3, 8, 0 ); // circle outline
+				circle( detectionMap, center, radius, Scalar(0, 0, 255), -1, -1, 0 ); // circle outline
+				// circle( workMap, element[i], RADIUS, Scalar(0, 0, 255), -1, -1, 0 ); // circle outline
+			} else if (idCircle == 'e') {
+				circle( detectionMap, center, 3, Scalar(255, 0, 0), -1, -1, 0 ); // circle outline
+			} else if (idCircle == 'b') {
+				circle( detectionMap, center, RADIUS / 2, Scalar(0, 255, 255), -1, -1, 0 ); // circle outline
 
-	// namedWindow("color"); imshow("color", srcHsv);
-	// moveWindow("color", 0, 250);
+			}
+			element[i] = center;
+			elementKind[i] = idCircle;
+		}
+
+		fclose(file);
+
+		// Show your results
+#ifdef DEBUG
+		showWindow(detectionMap, "Espaço de trabalho");
+#endif
+		imwrite( "./circulos.png", detectionMap );
+
+		// namedWindow("color"); imshow("color", srcHsv);
+		// moveWindow("color", 0, 250);
 
 #ifdef CONTRAST_CALIBRATION
-	switch ((char)waitKey(0)) {
-	case 'd':
-		contrast += CONTRAST;
-		break;
-	case 'c':
-		contrast -= CONTRAST;
-		break;
-	case 'g':
-		brightness += BRIGHTNESS;
-		break;
-	case 'b':
-		brightness -= BRIGHTNESS;
-		break;
-	case 'r':
-		ablur += aBLUR;
-		break;
-	case 'f':
-		ablur -= aBLUR;
-		break;
-	case 'x':
-		return circles.size();
-		break;
-	}
-	windowCont = -1;
-	destroyAllWindows();
+		switch ((char)waitKey(0)) {
+		case 'd':
+			contrast += CONTRAST;
+			break;
+		case 'c':
+			contrast -= CONTRAST;
+			break;
+		case 'g':
+			brightness += BRIGHTNESS;
+			break;
+		case 'b':
+			brightness -= BRIGHTNESS;
+			break;
+		case 'r':
+			ablur += aBLUR;
+			break;
+		case 'f':
+			ablur -= aBLUR;
+			break;
+		case 'x':
+			return circles.size();
+			break;
+		}
+		windowCont = -1;
+		destroyAllWindows();
 #endif
 
 #ifdef DEBUG
-	cout << "contrast:" << contrast << "\tbrightness:" << brightness << "\tblur:" << ablur << endl;
+		cout << "contrast:" << contrast << "\tbrightness:" << brightness << "\tblur:" << ablur << endl;
 #endif
 
 #ifdef CONTRAST_CALIBRATION
-}
+	}
 #endif
 
-return circles.size();
+	return circles.size();
 }
 
 
