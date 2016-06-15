@@ -308,6 +308,7 @@ int findPath( int* world_map2, int result[][2], int* start, int* end )
     }
 
     std::ofstream output("outputResult.txt"); 
+    output << steps << "\n";
     for (int i = 0; i < steps; i++)
     {
         for (int j = 0; j < 2; j++)

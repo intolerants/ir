@@ -119,6 +119,8 @@ void read_bolas(int *bolas, int *n_bolas);
 double pixelX2cmY(double x);
 double pixelY2cmX(double x);
 void readPath(void);
+void fechaNoPipe(void);
+void pegaPipe(double x, double y);
 void juma(void);
 
 
@@ -398,7 +400,7 @@ void calc_direta(void) {
 
 void calc_tetas(double x, double y, double z, double phi) {
     int i;
-    // printf("\nVou calcular tetas para posicao - x:%.2lf y:%.2lf z:%.2lf phi%.2lf\n", x, y, z, phi);
+    printf("\nVou calcular tetas para posicao - x:%.2lf y:%.2lf z:%.2lf phi%.2lf\n", x, y, z, phi);
     phi *= PI / 180;
     double exy = sqrt(pow(x, 2) + pow(y, 2));
     teta[0] = atan2(y / exy, x / exy);
@@ -413,7 +415,7 @@ void calc_tetas(double x, double y, double z, double phi) {
     double beta = atan2(sin(teta[2]) * L3 / exz14, (L2 + L3 * c3) / exz14);
     teta[1] = alpha - beta;
     teta[3] = phi - teta[1] - teta[2];
-    // printf("\nexy:%.2lf x14:%.2lf s3sqrt:%.2lf exz14:%.2lf\n", exy, x14, 1 - pow(c3, 2), exz14);
+    printf("\nexy:%.2lf x14:%.2lf s3sqrt:%.2lf exz14:%.2lf\n", exy, x14, 1 - pow(c3, 2), exz14);
     for (i = 0; i < 4; i++) {
         rad2deg(&teta[i]);
         // printf("%d) %.2lf\n", i+1, teta[i]);
@@ -548,15 +550,15 @@ void move_step_by_step(double x, double y, double z, double phi) {
     // interpola o movimento
     //z += (0.031400685275072*pow(y,2) + 1.965132928224196*y + 41.678905898998096) - 13;
     // z +=  (0.12608*y+16.03803) - 13;
-    printf("_____________________\nz:%.2lf\n", z);
-    if (y < -24) {
-        if (y < -28)
-            z += -2.5;
-        else if (y < -25)
-            z += -1.3;
-        else if (y < -21)
-            z += -1;
-    }
+    // printf("_____________________\nz:%.2lf\n", z);
+    // if (y < -24) {
+    //     if (y < -28)
+    //         z += -2.5;
+    //     else if (y < -25)
+    //         z += -1.3;
+    //     else if (y < -21)
+    //         z += -1;
+    // }
     printf("\nORIGEN TO-> - X:%.2lf Y:%.2lf Z:%.2lf phi%.2lf\n", X, Y, Z, phi);
     printf("\nMOVE-STEP-BY-STEP TO-> - x:%.2lf y:%.2lf z:%.2lf phi%.2lf\n", x, y, z, phi);
     int i;
@@ -564,7 +566,7 @@ void move_step_by_step(double x, double y, double z, double phi) {
     int steps = fmax(1, fmax(diffs[0], fmax(diffs[1], diffs[2])));
     steps *= 16;
     double stepSize[3] = {(x - X) / steps, (y - Y) / steps, (z - Z) / steps};
-    printf("\nSTEPSIZE-> - X:%.2lf Y:%.2lf Z:%.2lf\n\n", stepSize[0], stepSize[1], stepSize[2]);
+    printf("\nSTEPSIZE(%d)-> - X:%.2lf Y:%.2lf Z:%.2lf\n\n", steps, stepSize[0], stepSize[1], stepSize[2]);
     for (i = 0; i < steps; ++i)
     {
         X += stepSize[0];
@@ -806,7 +808,7 @@ void calcPath(void) {
     posaParaFoto();
 
     printf("\nTirando foto e encontrando obstaculos...\n");
-    if (system("./captura/circleFinder"));
+    if (system("./circleFinder"));
 
 }
 
@@ -830,14 +832,42 @@ void readPath(void) {
         i++;
     }
 
-    for (int i = 0; i < size; ++i)
-    {
-        printf("Pos(%lf,%lf)\n", path[i * 2], path[i * 2 + 1]);
-    }
+    // for (int i = 0; i < size; ++i)
+    // {
+    //     printf("Pos(%lf,%lf)\n", path[i * 2], path[i * 2 + 1]);
+    // }
+}
+
+void fechaNoPipe(void) {
+    sprintf(comando, "#4P1660");
+    sense[4] = 1660;
+    enviar_comando(comando, serial_fd);
+    memset(comando, 0, BUFSIZE);
+}
+
+void pegaPipe(double x, double y) {
+    move(0, -26.8, 20.9, 0);
+    sleep(2);
+    printf("Preparando para pegar o cano...\n");
+    move(x, y, 25, -90);
+    printf("Abrindo garra...\n");
+    sleep(3);
+    solta();
+    printf("Descendo...\n");
+    sleep(1);
+    move_step_by_step(x, y, 14.9, -90);
+    printf("Fechando garra...\n");
+    sleep(1);
+    fechaNoPipe();
+    printf("Subindo com o cano...\n");
+    sleep(1);
+    move_step_by_step(x, y, 15.9, -90);
+    sleep(1);
 }
 
 void juma(void) {
     calcPath();
     readPath();
-    sleep(100);
+    pegaPipe(path[0], path[1]);
+    // sleep(100);
 }
