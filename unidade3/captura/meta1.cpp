@@ -95,6 +95,8 @@ double L1 = 6.3, L2 = 14.6, L3 = 18.3, L4 = 8.5;
 double h = 7, t1, t2, t3, t4;
 int t = 2000, s = 300;
 
+double *path;
+
 void send_command(void);
 void make_and_send_command(void);
 void rad2deg(double *ang);
@@ -758,10 +760,37 @@ void read_bolas(int *bolas, int *n_bolas) {
         // bolas[i] = resposta[i];
 }
 
+
 double pixelX2cmY(double x) {
     return 0.11201*x + 7.65223;
 }
 
 double pixelY2cmX(double x) {
     return -0.12608*x + 23.18324;
+}
+
+void readPath(void) {
+    FILE* file = fopen("outputResult.txt", "r");
+    char line[256];
+    double aux;
+    int i = 0, size;
+
+    fgets(line, sizeof(line), file);
+    if(sscanf(line, "%d", &size));
+
+    path = (double*) malloc(size*2*sizeof(double*));
+
+    while (fgets(line, sizeof(line), file)) {
+        // if(sscanf(line, "%d %d %c", &alvo[j][0], &alvo[j][1], &letras[j]));
+        if(sscanf(line, "%lf %lf", &path[i*2], &path[i*2+1]));
+        aux = -pixelX2cmY(path[i*2]);
+        path[i*2] = pixelY2cmX(path[i*2+1]);
+        path[i*2+1] = aux;
+        i++;
+    }
+
+    for (int i = 0; i < size; ++i)
+    {
+        printf("Pos(%lf,%lf)\n", path[i*2], path[i*2+1]);
+    }
 }
