@@ -23,8 +23,8 @@
 
 
 #define DEBUG 1
-#define BLUE 178
-#define YELLOW 154
+#define BLUE 207
+#define YELLOW 218
 #define BLACK 16
 #define NUM_OF_COLORS 3
 #define OFFSET 300
@@ -46,8 +46,8 @@ char checkColor(Point center);
 void openFile(void);
 
 
-int COLORS[NUM_OF_COLORS] = {BLUE, YELLOW, BLACK};
-char ANSWERS[NUM_OF_COLORS] = {'e', 'b', 'w'}; //end, begin, wall
+int COLORS[NUM_OF_COLORS] = {YELLOW, BLUE, BLACK};
+char ANSWERS[NUM_OF_COLORS] = {'b', 'e', 'w'}; //end, begin, wall
 float LIMITS[NUM_OF_COLORS - 1];
 Mat src, srcHsv, image, workMap, detectionMap;
 int windowCont = -1;
@@ -60,6 +60,8 @@ Point element[NUM_OF_ELEMENTS];
 char elementKind[NUM_OF_ELEMENTS];
 Rect box;
 int world_map2[330*400];
+
+bool foundStart, foundEnd;
 
 Point windowPos(void) {
 	int pos = ++windowCont * OFFSET;
@@ -152,8 +154,8 @@ int main(int argc, const char** argv)
 {	
 	int size, result[10000][2];
 	initFindCircles();
-	// takePicture();
-	findCircles();
+	takePicture();
+	// findCircles();
 	drawMap();
 	
 	size = convertMatrix(result);
@@ -168,53 +170,57 @@ int main(int argc, const char** argv)
 }
 
 void takePicture() {
-	CvCapture* capture = 0;
-	Mat frame, frameCopy;
+  CvCapture* capture = 0;
+  Mat frame, frameCopy;
 
-	capture = cvCaptureFromCAM( -1 ); //0=default, -1=any camera, 1..99=your camera
+  capture = cvCaptureFromCAM( -1 ); //0=default, -1=any camera, 1..99=your camera
 
-	if (!capture)
-	{
-#ifdef DEBUG
-		cout << "No camera detected" << endl;
-#endif
-		// cvNamedWindow("result", CV_WINDOW_AUTOSIZE);
+  if (!capture)
+  {
+    if (DEBUG)
+      cout << "No camera detected" << endl;
+  }
 
-		if (capture)
-		{
-#ifdef DEBUG
-			cout << "In capture ..." << endl;
-#endif
-			for (;;)
-			{
-				IplImage* iplImg = cvQueryFrame( capture );
-				frame = iplImg;
+  // cvNamedWindow("result", CV_WINDOW_AUTOSIZE);
 
-				if ( frame.empty() )
-					break;
-				if ( iplImg->origin == IPL_ORIGIN_TL )
-					frame.copyTo( frameCopy );
-				else
-					flip( frame, frameCopy, 0 );
+  if (capture)
+  {
+    if (DEBUG)
+      cout << "In capture ..." << endl;
+    for (;;)
+    {
+      IplImage* iplImg = cvQueryFrame( capture );
+      frame = iplImg;
 
-				image = cvarrToMat(iplImg);
-				// cvShowImage( "result", iplImg );
-				// cvSaveImage("img.png", iplImg);
+      if ( frame.empty() )
+        break;
+      if ( iplImg->origin == IPL_ORIGIN_TL )
+        frame.copyTo( frameCopy );
+      else
+        flip( frame, frameCopy, 0 );
 
-				int numOfCircles = findCircles();
-				if ( waitKey( 10 ) >= 0 || numOfCircles == NUM_OF_ELEMENTS)
-					break;
-				cout << " =========== AGAIN ============\n\n";
-			}
-			/*IplImage* iplImg = cvQueryFrame(capture);
-			cvShowImage("result", iplImg);
-			cvSaveImage("img.png", iplImg);
-			waitKey(0);*/
-		}
-		cvReleaseCapture(&capture);
-		cvDestroyWindow("result");
-	}
+      image = cvarrToMat(iplImg);
+      // cvShowImage( "result", iplImg );
+      // cvSaveImage("img.png", iplImg);
+
+      int numOfCircles = findCircles();
+      cout << numOfCircles;
+      if ( waitKey( 10 ) >= 0 || (numOfCircles == 7 && foundStart && foundEnd))
+        // if (DEBUG)
+          break;
+      cout << " =========== AGAIN ============\n\n";
+    }
+    /*IplImage* iplImg = cvQueryFrame(capture);
+    cvShowImage("result", iplImg);
+    cvSaveImage("img.png", iplImg);
+    waitKey(0);*/
+  }
+
+
+  cvReleaseCapture(&capture);
+  cvDestroyWindow("result");
 }
+
 void initFindCircles(void) {
 	for (int i = 0; i < NUM_OF_COLORS - 1; ++i)
 	{
@@ -235,7 +241,7 @@ int findCircles() {
 	/*
 	  Transform it into the C++ cv::Mat format
 	*/
-	image = imread("1eComFundo.jpg", 1);
+	// image = imread("1eComFundo.jpg", 1);
 
 	/*
 	  Cria retangulo para filtragem da area de trabalho
@@ -361,6 +367,8 @@ int findCircles() {
 	detectionMap.convertTo(detectionMap, -1, 1, 120);
 
 	char idCircle;
+	foundEnd = false;
+	foundStart = false;
 	for (size_t i = 0; i < circles.size(); i++)
 	{
 		Point center(cvRound(circles[i][0]), cvRound(circles[i][1]));
@@ -378,8 +386,12 @@ int findCircles() {
 			circle( detectionMap, center, radius, Scalar(0, 0, 255), -1, -1, 0 ); // circle outline
 			// circle( workMap, element[i], RADIUS, Scalar(0, 0, 255), -1, -1, 0 ); // circle outline
 		} else if (idCircle == 'e') {
+			foundEnd = true;
+
 			circle( detectionMap, center, 3, Scalar(255, 0, 0), -1, -1, 0 ); // circle outline
 		} else if (idCircle == 'b') {
+			foundStart = true;
+
 			circle( detectionMap, center, RADIUS/2, Scalar(0, 255, 255), -1, -1, 0 ); // circle outline
 
 		}

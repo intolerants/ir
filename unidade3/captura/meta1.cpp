@@ -23,8 +23,8 @@ extern "C"
 //Posicao inicial para todos os servos
 
 /*DONT KNOW*/
-#define HOME_POS "#0P1528S500#1P1468S500#2P1672S500#3P1504S500#4P1870S500T2000"
-#define STANDBY "#0P1528S500#1P1428S500#2P968S500#3P1504S500#4P1870S500T2000"
+#define HOME_POS "#0P1345S500#1P1437S500#2P1613S500#3P1503S500#4P1870S500T2000"
+#define STANDBY "#0P1345S500#1P1437S500#2P803S500#3P1503S500#4P1870S500T2000"
 #define WAKEUP "#1P1428S500#2P968S500#3P1504S500#4P1870S500T2000"
 #define RELAX "#0P0000S2000#1P0000S2000#2P0000S2000#3P0000S2000#4P0000S1000"
 #define BACK "#0P1528S2000#1P1600S2000#2P1768S2000#3P1324S2000#4P1870S2000"
@@ -118,6 +118,8 @@ void read_coords(void);
 void read_bolas(int *bolas, int *n_bolas);
 double pixelX2cmY(double x);
 double pixelY2cmX(double x);
+void readPath(void);
+void juma(void);
 
 
 int main()
@@ -228,28 +230,32 @@ int main()
                     teta[0] -= STEP;
                 else if (c == 'a')
                     teta[0] += STEP;
-                sense[0] = offsetBas - teta[0] / gainBas;
+                calc_senses();
+                // sense[0] = offsetBas - teta[0] / gainBas;
                 sprintf(comando, "#%dP%d", BAS_SERVO, sense[0]);
             } else if (c == 'w' || c == 's') {
                 if (c == 'w')
                     teta[1] += STEP;
                 else if (c == 's')
                     teta[1] -= STEP;
-                sense[1] = teta[1] / gainShl + offsetShl;
+                // sense[1] = teta[1] / gainShl + offsetShl;
+                calc_senses();
                 sprintf(comando, "#%dP%d", SHL_SERVO, sense[1]);
             } else if (c == 'e' || c == 'd') {
                 if (c == 'e')
                     teta[2] += STEP;
                 else if (c == 'd')
                     teta[2] -= STEP;
-                sense[2] = -(teta[2] + 180) / gainElb + offsetElb;
+                // sense[2] = -(teta[2] + 180) / gainElb + offsetElb;
+                calc_senses();
                 sprintf(comando, "#%dP%d", ELB_SERVO, sense[2]);
             } else if (c == 'r' || c == 'f') {
                 if (c == 'r')
                     teta[3] += STEP;
                 else if (c == 'f')
                     teta[3] -= STEP;
-                sense[3] = (teta[3] + 90) / gainWri + offsetWri;
+                // sense[3] = (teta[3] + 90) / gainWri + offsetWri;
+                calc_senses();
                 sprintf(comando, "#%dP%d", WRI_SERVO, sense[3]);
             } else if (c == 't' || c == 'g') {
                 if (c == 't')
@@ -294,7 +300,10 @@ int main()
             } else if (c == 'o') {
                 c = '0';
                 magica();
-            } else if (c == '0') {
+            } else if (c == 'j') {
+                c = '0';
+                juma();
+                // } else if (c == '0') {
                 // repouso();
             } else if (c == '1') {
                 move(2.97, -22.55, 9, -5);
@@ -412,85 +421,106 @@ void calc_tetas(double x, double y, double z, double phi) {
 }
 
 void calc_senses() {
-    sense[0] = -(teta[0] / 0.1041667 - 636 - 28);
 
-    /* Calibracao manual*/
-    // sense[1] = teta[1]/0.1142132 - 32 + 712;
-    // sense[2] = -((teta[2]+180)/0.1209677 - 2256 - 172);
-    // sense[3] = (teta[3]+90)/0.0982533 + 4 + 584;
+    /* Braco 16.06.15*/
+    //  6,34922111715742e-06    -0,118223188700800  57,5242890711109
+    // -6,62510896668430e-06   0,128033175274047   -80,3030282309799
+    //  1,56089622201365e-05    -0,148822363834961  109,439558839270
+    //  2,65804863506011e-06    0,0906516854792717  -142,254039064384
 
-    /* Calibracao por regressao linear */
-    sense[1] = 762.684 + 7.948 * teta[1];
-    sense[2] = 854.377 - 9.231 * teta[2];
-    sense[3] = 1465.639 + 10.114 * teta[3];
+    double coefInv[4][3] = {{0.00623456790123457,   -8.82777777777778,  500.000000000000},
+        {0.00444444444444433,   8.35555555555557,   649.000000000000},
+        {0.0149794238683127,    -7.65185185185187,  803.000000000000},
+        { -0.00277777777777780,  10.1500000000000,   1503}
+    };
+    int i, j;
+    for (i = 0; i < 4; i++) {
+        sense[i] = 0;
+        for (j = 0; j < 3; j++){
+            sense[i] += coefInv[i][j] * pow(teta[i], 2 - j);
+        }
+    }
+    /* Braco Velho*/
+    // sense[0] = -(teta[0] / 0.1041667 - 636 - 28);
 
-    /* Calibracao quadrada*/
-    // sense[1] = 0.0020*pow(teta[1],2) + 7.6037*teta[1] + 775.4128;
-    // sense[2] = -0.0088*pow(teta[2],2) -10.9082*teta[2] + 783.4413;
-    // sense[3] = 10.6*teta[3] + 1461.8;
+    // /* Calibracao manual*/
+    // // sense[1] = teta[1]/0.1142132 - 32 + 712;
+    // // sense[2] = -((teta[2]+180)/0.1209677 - 2256 - 172);
+    // // sense[3] = (teta[3]+90)/0.0982533 + 4 + 584;
 
-    /* Calibracao de quarta ordem */
-    // sense[1] = -9.16283572805788 * pow(10, -06) * pow(teta[1], 4) + 0.00249238051918379 * pow(teta[1], 3) - 0.220292028854092 * pow(teta[1], 2) + 14.8408844789694 * teta[1] + 712.940479709510;
-    // sense[2] = 2.95031078343459 * pow(10, -06) * po0w(teta[2], 4) + 0.00133012241558227 * pow(teta[2], 3) + 0.204563648896187 * pow(teta[2], 2) + 3.35185281794406 * teta[2] + 1113.04750020549;
-    // sense[3] = -0.0485371397804810 * pow(teta[3], 4) + 3.17374947124019 * pow(teta[3], 3) - 74.7891701648607 * pow(teta[3], 2) + 758.694940993243 * teta[3] - 1195.19947031368;
+    // /*Era a boa*/
+    // /* Calibracao por regressao linear */
+    // sense[1] = 762.684 + 7.948 * teta[1];
+    // sense[2] = 854.377 - 9.231 * teta[2];
+    // sense[3] = 1465.639 + 10.114 * teta[3];
 
-    /* Calibracao tay */
-    // sense[1] = 680.022+8.755*teta[1];
-    // sense[2] = 939.983-8.267*teta[2];
-    // sense[3] = 1503.969+10.18*teta[3];
+    // /* Calibracao quadrada*/
+    // // sense[1] = 0.0020*pow(teta[1],2) + 7.6037*teta[1] + 775.4128;
+    // // sense[2] = -0.0088*pow(teta[2],2) -10.9082*teta[2] + 783.4413;
+    // // sense[3] = 10.6*teta[3] + 1461.8;
+
+    // /* Calibracao de quarta ordem */
+    // // sense[1] = -9.16283572805788 * pow(10, -06) * pow(teta[1], 4) + 0.00249238051918379 * pow(teta[1], 3) - 0.220292028854092 * pow(teta[1], 2) + 14.8408844789694 * teta[1] + 712.940479709510;
+    // // sense[2] = 2.95031078343459 * pow(10, -06) * po0w(teta[2], 4) + 0.00133012241558227 * pow(teta[2], 3) + 0.204563648896187 * pow(teta[2], 2) + 3.35185281794406 * teta[2] + 1113.04750020549;
+    // // sense[3] = -0.0485371397804810 * pow(teta[3], 4) + 3.17374947124019 * pow(teta[3], 3) - 74.7891701648607 * pow(teta[3], 2) + 758.694940993243 * teta[3] - 1195.19947031368;
+
+    // /* Calibracao tay */
+    // // sense[1] = 680.022+8.755*teta[1];
+    // // sense[2] = 939.983-8.267*teta[2];
+    // // sense[3] = 1503.969+10.18*teta[3];
 
 
-    // double coefInv[3][5];
-    // coefInv[0][0] = -0.0000104634647;
-    // coefInv[0][1] = 0.0041262617990;
-    // coefInv[0][2] = -0.5880722281595;
-    // coefInv[0][3] = 43.7376623927511;
-    // coefInv[0][4] = -100.6774234162458;
+    // // double coefInv[3][5];
+    // // coefInv[0][0] = -0.0000104634647;
+    // // coefInv[0][1] = 0.0041262617990;
+    // // coefInv[0][2] = -0.5880722281595;
+    // // coefInv[0][3] = 43.7376623927511;
+    // // coefInv[0][4] = -100.6774234162458;
 
-    // coefInv[1][0] = 0.000019878894;
-    // coefInv[1][1] = 0.007765778176;
-    // coefInv[1][2] = 1.101645705756;
-    // coefInv[1][3] = 57.071877411949;
-    // coefInv[1][4] = 2220.584002136401;
+    // // coefInv[1][0] = 0.000019878894;
+    // // coefInv[1][1] = 0.007765778176;
+    // // coefInv[1][2] = 1.101645705756;
+    // // coefInv[1][3] = 57.071877411949;
+    // // coefInv[1][4] = 2220.584002136401;
 
-    // coefInv[2][0] = 0.182790109972;
-    // coefInv[2][1] = -6.566632619850;
-    // coefInv[2][2] = 76.275365447122;
-    // coefInv[2][3] = -291.855614634314;
-    // coefInv[2][4] = 1751.070894676433;
+    // // coefInv[2][0] = 0.182790109972;
+    // // coefInv[2][1] = -6.566632619850;
+    // // coefInv[2][2] = 76.275365447122;
+    // // coefInv[2][3] = -291.855614634314;
+    // // coefInv[2][4] = 1751.070894676433;
 
-    // int i, j;
-    // for (i = 0; i < 3; i++){
-    //     sense[i+1] = 0;
-    //     for (j = 0; j < 5; j++)
-    //         sense[i+1] += coefInv[i][j]*pow(teta[i+1], 4-j);
-    // }
+    // // int i, j;
+    // // for (i = 0; i < 3; i++){
+    // //     sense[i+1] = 0;
+    // //     for (j = 0; j < 5; j++)
+    // //         sense[i+1] += coefInv[i][j]*pow(teta[i+1], 4-j);
+    // // }
 
-    // double coefInv[3][5];
-    // coefInv[0][0] = -0.0000130074643;
-    // coefInv[0][1] = 0.0048936140211;
-    // coefInv[0][2] = -0.6799625220436;
-    // coefInv[0][3] = 49.1398179698763;
-    // coefInv[0][4] = -200.0835952186753;
+    // // double coefInv[3][5];
+    // // coefInv[0][0] = -0.0000130074643;
+    // // coefInv[0][1] = 0.0048936140211;
+    // // coefInv[0][2] = -0.6799625220436;
+    // // coefInv[0][3] = 49.1398179698763;
+    // // coefInv[0][4] = -200.0835952186753;
 
-    // coefInv[1][0] = -0.000031383909;
-    // coefInv[1][1] = -0.012030352524;
-    // coefInv[1][2] = -1.666970797272;
-    // coefInv[1][3] = -108.311783997613;
-    // coefInv[1][4] = -1337.002954744356;
+    // // coefInv[1][0] = -0.000031383909;
+    // // coefInv[1][1] = -0.012030352524;
+    // // coefInv[1][2] = -1.666970797272;
+    // // coefInv[1][3] = -108.311783997613;
+    // // coefInv[1][4] = -1337.002954744356;
 
-    // coefInv[2][0] = 0.295869119321;
-    // coefInv[2][1] = -10.568457591541;
-    // coefInv[2][2] = 120.936917083721;
-    // coefInv[2][3] = -450.788951491756;
-    // coefInv[2][4] = 1847.803237565521;
+    // // coefInv[2][0] = 0.295869119321;
+    // // coefInv[2][1] = -10.568457591541;
+    // // coefInv[2][2] = 120.936917083721;
+    // // coefInv[2][3] = -450.788951491756;
+    // // coefInv[2][4] = 1847.803237565521;
 
-    // int i, j;
-    // for (i = 0; i < 3; i++){
-    //     sense[i+1] = 0;
-    //     for (j = 0; j < 5; j++)
-    //         sense[i+1] += coefInv[i][j]*pow(teta[i+1], 4-j);
-    // }
+    // // int i, j;
+    // // for (i = 0; i < 3; i++){
+    // //     sense[i+1] = 0;
+    // //     for (j = 0; j < 5; j++)
+    // //         sense[i+1] += coefInv[i][j]*pow(teta[i+1], 4-j);
+    // // }
 }
 
 void move(double x, double y, double z, double phi) {
@@ -518,8 +548,8 @@ void move_step_by_step(double x, double y, double z, double phi) {
     // interpola o movimento
     //z += (0.031400685275072*pow(y,2) + 1.965132928224196*y + 41.678905898998096) - 13;
     // z +=  (0.12608*y+16.03803) - 13;
-    printf("_____________________\nz:%.2lf\n",z);
-    if (y < -24){
+    printf("_____________________\nz:%.2lf\n", z);
+    if (y < -24) {
         if (y < -28)
             z += -2.5;
         else if (y < -25)
@@ -533,7 +563,7 @@ void move_step_by_step(double x, double y, double z, double phi) {
     int diffs[3] = {fabs(x - X), fabs(y - Y), fabs(z - Z)};
     int steps = fmax(1, fmax(diffs[0], fmax(diffs[1], diffs[2])));
     steps *= 16;
-    double stepSize[3] = {(x - X)/steps, (y - Y)/steps, (z - Z)/steps};
+    double stepSize[3] = {(x - X) / steps, (y - Y) / steps, (z - Z) / steps};
     printf("\nSTEPSIZE-> - X:%.2lf Y:%.2lf Z:%.2lf\n\n", stepSize[0], stepSize[1], stepSize[2]);
     for (i = 0; i < steps; ++i)
     {
@@ -652,7 +682,7 @@ void magica() {
     char line[256];
     while (fgets(line, sizeof(line), file)) {
         // if(sscanf(line, "%d %d %c", &alvo[j][0], &alvo[j][1], &letras[j]));
-        if(sscanf(line, "%d %d %c", &alvo[j][0], &alvo[j][1], &alvo[j][2]));
+        if (sscanf(line, "%d %d %c", &alvo[j][0], &alvo[j][1], &alvo[j][2]));
         alvoPrecision[j][0] = -pixelX2cmY(alvo[j][0]);
         alvoPrecision[j][1] = pixelY2cmX(alvo[j][1]);
         alvoPrecision[j][2] = alvo[j][2];
@@ -671,7 +701,7 @@ void magica() {
     if (scanf("%d", &n_bolas));
     // n_bolas = 7;
     bolas = ((int*) malloc(n_bolas * sizeof(int)));
-    
+
     read_bolas(bolas, &n_bolas);
 
     desenha_targets(alvoPrecision, bolas, n_bolas);
@@ -680,8 +710,8 @@ void magica() {
 void desenha_targets(double alvo[][3], int *bolas, int n_bolas) {
     int i, j;
     pega_piloto_custom(alvo);
-    for (i = 0; i < n_bolas; i++){
-        for (j = 0; j < 7; ++j){
+    for (i = 0; i < n_bolas; i++) {
+        for (j = 0; j < 7; ++j) {
             if (((char)bolas[i]) == ((char)alvo[j][2])) {
                 move_step_by_step(alvo[j][1], alvo[j][0], 13, 0);
                 sleep(2);
@@ -698,21 +728,21 @@ void pega_piloto_custom(double alvo[7][3]) {
     {
         printf("%d) %lf %lf %c\n", i, alvo[i][0], alvo[i][1], (char)alvo[i][2]);
     }
-        // p r b y c g
+    // p r b y c g
     sleep(3);
     i = 0;
     printf("Procurando piloto\n");
-    while(((char)alvo[i][2]) != 't'){
+    while (((char)alvo[i][2]) != 't') {
         // printf("alvo[%d][2] = %c\n", i++, (char)alvo[i][2]);
         i++;
-        if (i > 6){
+        if (i > 6) {
             printf("Piloto nao encontrado\n");
             exit(0);
         }
     }
     printf("Piloto encontrado em %d\n", i);
     printf("Preparando para pegar o piloto...\n");
-    move(alvo[i][1], alvo[i][0]+3, 25, 0);
+    move(alvo[i][1], alvo[i][0] + 3, 25, 0);
     printf("Abrindo garra...\n");
     sleep(3);
     solta();
@@ -757,16 +787,27 @@ void read_bolas(int *bolas, int *n_bolas) {
     // char resposta[7] = {'r', 'c', 'y', 'p', 'g', 'b', 'r'};
     for (i = 0; i < *n_bolas; i++)
         if (scanf(" %c", &bolas[i]));
-        // bolas[i] = resposta[i];
+    // bolas[i] = resposta[i];
 }
 
 
 double pixelX2cmY(double x) {
-    return 0.11201*x + 7.65223;
+    return 0.11201 * x + 7.65223;
 }
 
 double pixelY2cmX(double x) {
-    return -0.12608*x + 23.18324;
+    return -0.12608 * x + 23.18324;
+}
+
+void calcPath(void) {
+    if (system("clear"));
+
+    printf("\nPosando para foto...\n");
+    posaParaFoto();
+
+    printf("\nTirando foto e encontrando obstaculos...\n");
+    if (system("./captura/circleFinder"));
+
 }
 
 void readPath(void) {
@@ -776,21 +817,27 @@ void readPath(void) {
     int i = 0, size;
 
     fgets(line, sizeof(line), file);
-    if(sscanf(line, "%d", &size));
+    if (sscanf(line, "%d", &size));
 
-    path = (double*) malloc(size*2*sizeof(double*));
+    path = (double*) malloc(size * 2 * sizeof(double*));
 
     while (fgets(line, sizeof(line), file)) {
         // if(sscanf(line, "%d %d %c", &alvo[j][0], &alvo[j][1], &letras[j]));
-        if(sscanf(line, "%lf %lf", &path[i*2], &path[i*2+1]));
-        aux = -pixelX2cmY(path[i*2]);
-        path[i*2] = pixelY2cmX(path[i*2+1]);
-        path[i*2+1] = aux;
+        if (sscanf(line, "%lf %lf", &path[i * 2], &path[i * 2 + 1]));
+        aux = -pixelX2cmY(path[i * 2]);
+        path[i * 2] = pixelY2cmX(path[i * 2 + 1]);
+        path[i * 2 + 1] = aux;
         i++;
     }
 
     for (int i = 0; i < size; ++i)
     {
-        printf("Pos(%lf,%lf)\n", path[i*2], path[i*2+1]);
+        printf("Pos(%lf,%lf)\n", path[i * 2], path[i * 2 + 1]);
     }
+}
+
+void juma(void) {
+    calcPath();
+    readPath();
+    sleep(100);
 }
