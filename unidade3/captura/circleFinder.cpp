@@ -33,7 +33,7 @@
 #define BRIGHTNESS 20
 #define aBLUR 2
 #define WIDTH 1400
-#define RADIUS 28
+#define RADIUS 35
 #define NUM_OF_ELEMENTS 7
 
 using namespace std;

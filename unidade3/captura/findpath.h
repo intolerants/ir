@@ -3,7 +3,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <math.h>
-// #include <fstream>
+#include <fstream>
 
 #define DEBUG_LISTS 0
 #define DEBUG_LIST_LENGTHS_ONLY 0
@@ -17,32 +17,7 @@ using namespace std;
 const int MAP_WIDTH = 330;
 const int MAP_HEIGHT = 400;
 
-int world_map[ MAP_WIDTH * MAP_HEIGHT ] = 
-{
-
-// 0001020304050607080910111213141516171819
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,   // 00
-    1,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,1,   // 01
-    1,9,9,1,1,9,9,9,1,9,1,9,1,9,1,9,9,9,1,1,   // 02
-    1,9,9,1,1,9,9,9,1,9,1,9,1,9,1,9,9,9,1,1,   // 03
-    1,9,1,1,1,1,9,9,1,9,1,9,1,1,1,1,9,9,1,1,   // 04
-    1,9,1,1,9,1,1,1,1,9,1,1,1,1,9,1,1,1,1,1,   // 05
-    1,9,9,9,9,1,1,1,1,1,1,9,9,9,9,1,1,1,1,1,   // 06
-    1,9,9,9,9,9,9,9,9,1,1,1,9,9,9,9,9,9,9,1,   // 07
-    1,9,1,1,1,1,1,1,1,1,1,9,1,1,1,1,1,1,1,1,   // 08
-    1,9,1,9,9,9,9,9,9,9,1,1,9,9,9,9,9,9,9,1,   // 09
-    1,9,1,1,1,1,9,1,1,9,1,1,1,1,1,1,1,1,1,1,   // 10
-    1,9,9,9,9,9,1,9,1,9,1,9,9,9,9,9,1,1,1,1,   // 11
-    1,9,1,9,1,9,9,9,1,9,1,9,1,9,1,9,9,9,1,1,   // 12
-    1,9,1,9,1,9,9,9,1,9,1,9,1,9,1,9,9,9,1,1,   // 13
-    1,9,1,1,1,1,9,9,1,9,1,9,1,1,1,1,9,9,1,1,   // 14
-    1,9,1,1,9,1,1,1,1,9,1,1,1,1,9,1,1,1,1,1,   // 15
-    1,9,9,9,9,1,1,1,1,1,1,9,9,9,9,1,1,1,1,1,   // 16
-    1,1,9,9,9,9,9,9,9,1,1,1,9,9,9,1,9,9,9,9,   // 17
-    1,9,1,1,1,1,1,1,1,1,1,9,1,1,1,1,1,1,1,1,   // 18
-    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,   // 19
-
-};
+int world_map[ MAP_WIDTH * MAP_HEIGHT ];
 
 // map helper functions
 
@@ -206,27 +181,9 @@ float MapSearchNode::GetCost( MapSearchNode &successor )
 
 int findPath( int* world_map2, int result[][2], int* start, int* end )
 {
-
-
-    // Our sample problem defines the world as a 2d array representing a terrain
-    // Each element contains an integer from 0 to 5 which indicates the cost 
-    // of travel across the terrain. Zero means the least possible difficulty 
-    // in travelling (think ice rink if you can skate) whilst 5 represents the 
-    // most difficult. 9 indicates that we cannot pass.
-
     // Create an instance of the search class...
 
     memcpy(world_map, world_map2, MAP_WIDTH*MAP_HEIGHT*sizeof(int));
-
-    // std::ofstream output("inputmatrix.txt"); 
-    // for (int i=0;i<MAP_WIDTH;i++)
-    // {
-    //     for (int j=0;j<MAP_HEIGHT;j++)
-    //     {
-    //         output << world_map[i*330+j] << " "; // behaves like cout - cout is also a stream
-    //     }
-    //     output << "\n";
-    // } 
 
     AStarSearch<MapSearchNode> astarsearch;
 
@@ -349,6 +306,16 @@ int findPath( int* world_map2, int result[][2], int* start, int* end )
 
         astarsearch.EnsureMemoryFreed();
     }
+
+    std::ofstream output("outputResult.txt"); 
+    for (int i = 0; i < steps; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            output << result[i][j] << " "; // behaves like cout - cout is also a stream
+        }
+        output << "\n";
+    } 
 
     // cout << "Result" << endl;
     // for (int i = 0; i < steps; i++)
