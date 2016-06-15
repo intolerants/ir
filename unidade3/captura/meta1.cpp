@@ -96,6 +96,7 @@ double h = 7, t1, t2, t3, t4;
 int t = 2000, s = 300;
 
 double *path;
+int pathSize;
 
 void send_command(void);
 void make_and_send_command(void);
@@ -816,12 +817,12 @@ void readPath(void) {
     FILE* file = fopen("outputResult.txt", "r");
     char line[256];
     double aux;
-    int i = 0, size;
+    int i = 0;
 
     fgets(line, sizeof(line), file);
-    if (sscanf(line, "%d", &size));
+    if (sscanf(line, "%d", &pathSize));
 
-    path = (double*) malloc(size * 2 * sizeof(double*));
+    path = (double*) malloc(pathSize * 2 * sizeof(double*));
 
     while (fgets(line, sizeof(line), file)) {
         // if(sscanf(line, "%d %d %c", &alvo[j][0], &alvo[j][1], &letras[j]));
@@ -832,15 +833,15 @@ void readPath(void) {
         i++;
     }
 
-    // for (int i = 0; i < size; ++i)
+    // for (int i = 0; i < pathSize; ++i)
     // {
     //     printf("Pos(%lf,%lf)\n", path[i * 2], path[i * 2 + 1]);
     // }
 }
 
 void fechaNoPipe(void) {
-    sprintf(comando, "#4P1660");
-    sense[4] = 1660;
+    sprintf(comando, "#4P1730");
+    sense[4] = 1730;
     enviar_comando(comando, serial_fd);
     memset(comando, 0, BUFSIZE);
 }
@@ -849,19 +850,19 @@ void pegaPipe(double x, double y) {
     move(0, -26.8, 20.9, 0);
     sleep(2);
     printf("Preparando para pegar o cano...\n");
-    move(x, y, 25, -90);
+    move(x-1.5, y+1, 25, -60);
     printf("Abrindo garra...\n");
     sleep(3);
     solta();
     printf("Descendo...\n");
     sleep(1);
-    move_step_by_step(x, y, 14.9, -90);
+    move_step_by_step(x-1.5, y+1, 11.3, -60);
     printf("Fechando garra...\n");
     sleep(1);
     fechaNoPipe();
     printf("Subindo com o cano...\n");
     sleep(1);
-    move_step_by_step(x, y, 15.9, -90);
+    move_step_by_step(x-1.5, y+1, 13.3, -60);
     sleep(1);
 }
 
@@ -869,5 +870,9 @@ void juma(void) {
     calcPath();
     readPath();
     pegaPipe(path[0], path[1]);
+    // for (int i = 0; i < pathSize; ++i)
+    // {
+    //     move()
+    // }
     // sleep(100);
 }

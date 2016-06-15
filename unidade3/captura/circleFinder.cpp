@@ -22,13 +22,13 @@
 #include "findpath.h"
 
 
-#define DEBUG 1
-#define BLUE 207
-#define YELLOW 218
-#define BLACK 16
+// #define DEBUG 1
+#define BLUE 223
+#define YELLOW 238
+#define BLACK 21
 #define NUM_OF_COLORS 3
-#define OFFSET 300
-#define OFFSETY 400
+#define OFFSET 350
+#define OFFSETY 350
 #define CONTRAST 0.2
 #define BRIGHTNESS 20
 #define aBLUR 2
@@ -48,6 +48,8 @@ void openFile(void);
 
 int COLORS[NUM_OF_COLORS] = {YELLOW, BLUE, BLACK};
 char ANSWERS[NUM_OF_COLORS] = {'b', 'e', 'w'}; //end, begin, wall
+// int COLORS[NUM_OF_COLORS] = {BLUE, YELLOW, BLACK};
+// char ANSWERS[NUM_OF_COLORS] = {'e', 'b', 'w'}; //end, begin, wall
 float LIMITS[NUM_OF_COLORS - 1];
 Mat src, srcHsv, image, workMap, detectionMap;
 int windowCont = -1;
@@ -84,7 +86,7 @@ void drawMap(void) {
 	// src.copyTo(workMap);
 	// workMap.convertTo(workMap, -1, 1, 1000);
 	rectangle(workMap, Rect(0,0,330,400), Scalar(255, 255, 254), -1);
-	rectangle(workMap, Rect(2,60,325,227), Scalar(0, 0, 0), 2);
+	// rectangle(workMap, Rect(2,60,325,227), Scalar(0, 0, 0), 2);
 	for (int i = 0; i < NUM_OF_ELEMENTS; i++)
 	{
 		if (elementKind[i] == 'w') {
@@ -121,15 +123,23 @@ int convertMatrix(int result[][2]){
 				workMap.at<Vec3b>(Point(i, j)) = Vec3b(100,100,0);
 				end[0] = i;
 				end[1] = j;
+
+#ifdef DEBUG
 				// cout << "endColor:" << (int)workMap.at<Vec3b>(Point(i, j)).val[2] << endl;
 				cout << "end: " << end[0] << " " << end[1] << endl;
+#endif
+
 			}
 			else if (workMap.at<Vec3b>(Point(i, j)).val[2] == 253){
 				workMap.at<Vec3b>(Point(i, j)) = Vec3b(100,100,0);
 				start[0] = i;
 				start[1] = j;
+
+#ifdef DEBUG
 				// cout << "startColor:" << (int)workMap.at<Vec3b>(Point(i, j)).val[2] << endl;
 				cout << "start: " << start[0] << " " << start[1] << endl;
+#endif
+				
 			}
 			world_map2[j*330 + i] = (int)workMap.at<Vec3b>(Point(i, j)).val[2] == 255 ? 9:1;
 		}
@@ -164,8 +174,13 @@ int main(int argc, const char** argv)
 	// 		cout << result[i][j] << " ";
 	// 	cout << endl;
 	// }
-	cout << "PRESS ANY KEY TO EXIT" << endl;
-	waitKey(0);
+#ifdef DEBUG
+	// showWindow(src, "Source");
+	cout << "press ESC to exit" << endl;
+	while((cv::waitKey() & 0xEFFFFF) != 27); //27 is the keycode for ESC
+#endif
+	destroyAllWindows();
+
 	return 0;
 }
 
@@ -175,18 +190,20 @@ void takePicture() {
 
   capture = cvCaptureFromCAM( -1 ); //0=default, -1=any camera, 1..99=your camera
 
+#ifdef DEBUG
   if (!capture)
-  {
-    if (DEBUG)
       cout << "No camera detected" << endl;
-  }
+#endif
 
   // cvNamedWindow("result", CV_WINDOW_AUTOSIZE);
 
   if (capture)
   {
-    if (DEBUG)
+
+#ifdef DEBUG
       cout << "In capture ..." << endl;
+#endif
+
     for (;;)
     {
       IplImage* iplImg = cvQueryFrame( capture );
@@ -202,13 +219,17 @@ void takePicture() {
       image = cvarrToMat(iplImg);
       // cvShowImage( "result", iplImg );
       // cvSaveImage("img.png", iplImg);
-
+      windowCont = -1;
       int numOfCircles = findCircles();
-      cout << numOfCircles;
+
+#ifdef DEBUG
+      cout << "Found " << numOfCircles << " circles";
+#endif
+
       if ( waitKey( 10 ) >= 0 || (numOfCircles == 7 && foundStart && foundEnd))
         // if (DEBUG)
           break;
-      cout << " =========== AGAIN ============\n\n";
+      cout << " =========== TRYING AGAIN ============\n\n";
     }
     /*IplImage* iplImg = cvQueryFrame(capture);
     cvShowImage("result", iplImg);
@@ -218,7 +239,7 @@ void takePicture() {
 
 
   cvReleaseCapture(&capture);
-  cvDestroyWindow("result");
+  // cvDestroyWindow("result");
 }
 
 void initFindCircles(void) {
@@ -261,6 +282,7 @@ int findCircles() {
 	// workMap = src.clone();
 	src.copyTo(workMap);
 
+
 	//cvtColor(src, src, CV_8U);
 
 	/*
@@ -274,6 +296,7 @@ int findCircles() {
 
 
 #ifdef DEBUG
+	showWindow(src, "Source");
 	showWindow(srcHsv, "srcHsv0");
 #endif
 	/*
@@ -364,7 +387,7 @@ int findCircles() {
 	/*
 	  Draw the circles detected
 	*/
-	detectionMap.convertTo(detectionMap, -1, 1, 120);
+	detectionMap.convertTo(detectionMap, -1, 1, 250);
 
 	char idCircle;
 	foundEnd = false;
@@ -392,7 +415,7 @@ int findCircles() {
 		} else if (idCircle == 'b') {
 			foundStart = true;
 
-			circle( detectionMap, center, RADIUS/2, Scalar(0, 255, 255), -1, -1, 0 ); // circle outline
+			circle( detectionMap, center, 14, Scalar(0, 255, 255), -1, -1, 0 ); // circle outline
 
 		}
 		element[i] = center;
@@ -434,8 +457,8 @@ int findCircles() {
 		return circles.size();
 		break;
 	}
-	windowCont = -1;
-	destroyAllWindows();
+	// windowCont = -1;
+	// destroyAllWindows();
 #endif
 
 #ifdef DEBUG
@@ -451,7 +474,7 @@ return circles.size();
 
 
 char checkColor(Point center) {
-	int size = 120;
+	int size = 100;
 	int sample[3], hue, saturation;
 	char hueDebug;
 	for (int j = 0; j < 3; ++j)
@@ -474,7 +497,7 @@ char checkColor(Point center) {
 		srcHsv.at<Vec3b>(center + Point(-size / 4  + i,  i)) = Vec3b(255, 255, 255);
 		srcHsv.at<Vec3b>(center + Point(-size / 4  + i, -i)) = Vec3b(255, 255, 255);
 	}
-	// showWindow(srcHsv, "srcHsv");
+	// showWindow(srcHsv, "checkColor");
 	cout << "HSV:" << sample[0] / size << " " << sample[1] / size << " " << sample[2] / size << " - ";
 #endif
 	saturation = sample[1] / size;
