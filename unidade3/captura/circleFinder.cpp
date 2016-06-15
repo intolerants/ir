@@ -19,6 +19,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
+#include "findpath.h"
 
 
 #define DEBUG 1
@@ -58,6 +59,7 @@ Point pTemp;
 Point element[NUM_OF_ELEMENTS];
 char elementKind[NUM_OF_ELEMENTS];
 Rect box;
+int world_map2[330*400];
 
 Point windowPos(void) {
 	int pos = ++windowCont * OFFSET;
@@ -78,8 +80,9 @@ void showWindow(Mat m, string s)
 
 void drawMap(void) {
 	// src.copyTo(workMap);
-	workMap.convertTo(workMap, -1, 1, 120);
-	rectangle(workMap, Rect(2,60,325,227), Scalar(0, 0, 255), 2);
+	// workMap.convertTo(workMap, -1, 1, 1000);
+	rectangle(workMap, Rect(0,0,330,400), Scalar(255, 255, 254), -1);
+	rectangle(workMap, Rect(2,60,325,227), Scalar(0, 0, 0), 2);
 	for (int i = 0; i < NUM_OF_ELEMENTS; i++)
 	{
 		if (elementKind[i] == 'w') {
@@ -87,13 +90,17 @@ void drawMap(void) {
 			circle( workMap, element[i], RADIUS, Scalar(0, 0, 255), -1, -1, 0 ); // circle outline
 		}
 		else {
-			Scalar centerColor = Scalar(0, 0, 0); // error = black
+			Vec3b centerColor = Vec3b(0, 0, 0); // error = black
 			if (elementKind[i] == 'e')
-				centerColor = Scalar(255, 0, 0); //BGR end = blue
+				centerColor = Vec3b(255, 0, 1); //BGR end = blue
 			else if (elementKind[i] == 'b')
-				centerColor = Scalar(0, 255, 255); //BGR begin = yellow
+				centerColor = Vec3b(0, 255, 253); //BGR begin = yellow
 
-			circle( workMap, element[i], 3, centerColor, -1, 8, 0 ); // circle center
+			// circle( workMap, element[i], 1, centerColor, 0, 8, 0 ); // circle center
+			workMap.at<Vec3b>(element[i]) = centerColor;
+			// srcHsv.at<Vec3b>(center + Point(size  / 4  - i,  i)) = Vec3b(255, 255, 255);
+
+
 		}
 	}
 #ifdef DEBUG
@@ -101,13 +108,60 @@ void drawMap(void) {
 #endif
 }
 
+int convertMatrix(int result[][2]){
+	int size, start[2], end[2];
+
+	// cout << "Matriz" << endl;
+	for (int i = 0; i < 330; i++){
+		for (int j = 0; j < 400; j++){
+			// cout << world_map2[i*330 + j] << " ";
+			if (workMap.at<Vec3b>(Point(i, j)).val[2] == 1){
+				workMap.at<Vec3b>(Point(i, j)) = Vec3b(100,100,0);
+				end[0] = i;
+				end[1] = j;
+				// cout << "endColor:" << (int)workMap.at<Vec3b>(Point(i, j)).val[2] << endl;
+				cout << "end: " << end[0] << " " << end[1] << endl;
+			}
+			else if (workMap.at<Vec3b>(Point(i, j)).val[2] == 253){
+				workMap.at<Vec3b>(Point(i, j)) = Vec3b(100,100,0);
+				start[0] = i;
+				start[1] = j;
+				// cout << "startColor:" << (int)workMap.at<Vec3b>(Point(i, j)).val[2] << endl;
+				cout << "start: " << start[0] << " " << start[1] << endl;
+			}
+			world_map2[j*330 + i] = (int)workMap.at<Vec3b>(Point(i, j)).val[2] == 255 ? 9:1;
+		}
+		//cout << endl;
+	}
+
+	size = findPath(world_map2, result, start, end);
+
+	Vec3b pathColor = Vec3b(0,0,0);
+	// cout << "Result" << endl;
+    for (int i = 0; i < size; i++){
+        // cout << result[i][0] << " " << result[i][1] << endl;
+		workMap.at<Vec3b>(Point(result[i][0],result[i][1])) = pathColor;
+		// cout << endl;
+	}
+	showWindow(workMap, "path");
+	return size;
+}
+
 int main(int argc, const char** argv)
 // void run(void)
-{
+{	
+	int size, result[10000][2];
 	initFindCircles();
 	// takePicture();
 	findCircles();
 	drawMap();
+	
+	size = convertMatrix(result);
+	// for (int i = 0; i < size; i++){
+	// 	for (int j = 0; j < 2; j++)
+	// 		cout << result[i][j] << " ";
+	// 	cout << endl;
+	// }
 	cout << "PRESS ANY KEY TO EXIT" << endl;
 	waitKey(0);
 	return 0;

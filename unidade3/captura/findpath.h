@@ -1,18 +1,9 @@
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// STL A* Search implementation
-// (C)2001 Justin Heyes-Jones
-//
-// Finding a path on a simple grid maze
-// This shows how to do shortest path finding using A*
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 #include "stlastar.h" // See header for copyright and usage information
 
 #include <iostream>
 #include <stdio.h>
 #include <math.h>
+// #include <fstream>
 
 #define DEBUG_LISTS 0
 #define DEBUG_LIST_LENGTHS_ONLY 0
@@ -26,34 +17,32 @@ using namespace std;
 const int MAP_WIDTH = 330;
 const int MAP_HEIGHT = 400;
 
-int world_map[ MAP_WIDTH * MAP_HEIGHT ];
+int world_map[ MAP_WIDTH * MAP_HEIGHT ] = 
+{
 
-// int world_map[ MAP_WIDTH * MAP_HEIGHT ] = 
-// {
+// 0001020304050607080910111213141516171819
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,   // 00
+    1,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,1,   // 01
+    1,9,9,1,1,9,9,9,1,9,1,9,1,9,1,9,9,9,1,1,   // 02
+    1,9,9,1,1,9,9,9,1,9,1,9,1,9,1,9,9,9,1,1,   // 03
+    1,9,1,1,1,1,9,9,1,9,1,9,1,1,1,1,9,9,1,1,   // 04
+    1,9,1,1,9,1,1,1,1,9,1,1,1,1,9,1,1,1,1,1,   // 05
+    1,9,9,9,9,1,1,1,1,1,1,9,9,9,9,1,1,1,1,1,   // 06
+    1,9,9,9,9,9,9,9,9,1,1,1,9,9,9,9,9,9,9,1,   // 07
+    1,9,1,1,1,1,1,1,1,1,1,9,1,1,1,1,1,1,1,1,   // 08
+    1,9,1,9,9,9,9,9,9,9,1,1,9,9,9,9,9,9,9,1,   // 09
+    1,9,1,1,1,1,9,1,1,9,1,1,1,1,1,1,1,1,1,1,   // 10
+    1,9,9,9,9,9,1,9,1,9,1,9,9,9,9,9,1,1,1,1,   // 11
+    1,9,1,9,1,9,9,9,1,9,1,9,1,9,1,9,9,9,1,1,   // 12
+    1,9,1,9,1,9,9,9,1,9,1,9,1,9,1,9,9,9,1,1,   // 13
+    1,9,1,1,1,1,9,9,1,9,1,9,1,1,1,1,9,9,1,1,   // 14
+    1,9,1,1,9,1,1,1,1,9,1,1,1,1,9,1,1,1,1,1,   // 15
+    1,9,9,9,9,1,1,1,1,1,1,9,9,9,9,1,1,1,1,1,   // 16
+    1,1,9,9,9,9,9,9,9,1,1,1,9,9,9,1,9,9,9,9,   // 17
+    1,9,1,1,1,1,1,1,1,1,1,9,1,1,1,1,1,1,1,1,   // 18
+    1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,   // 19
 
-// // 0001020304050607080910111213141516171819
-//     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,   // 00
-//     1,1,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,1,   // 01
-//     1,1,9,1,1,9,9,9,1,9,1,9,1,9,1,9,9,9,1,1,   // 02
-//     1,1,9,9,1,9,9,9,1,9,1,9,1,9,1,9,9,9,1,1,   // 03
-//     1,1,1,1,1,1,9,9,1,9,1,9,1,1,1,1,9,9,1,1,   // 04
-//     1,9,1,1,9,1,1,1,1,9,1,1,1,1,9,1,1,1,1,1,   // 05
-//     1,9,9,9,9,1,1,1,1,1,1,9,9,9,9,1,1,1,1,1,   // 06
-//     1,9,9,9,9,9,9,9,9,1,1,1,9,9,9,9,9,9,9,1,   // 07
-//     1,9,1,1,1,1,1,1,1,1,1,9,1,1,1,1,1,1,1,1,   // 08
-//     1,9,1,9,9,9,9,9,9,9,1,1,9,9,9,9,9,9,9,1,   // 09
-//     1,9,1,1,1,1,9,1,1,9,1,1,1,1,1,1,1,1,1,1,   // 10
-//     1,9,9,9,9,9,1,9,1,9,1,9,9,9,9,9,1,1,1,1,   // 11
-//     1,9,1,9,1,9,9,9,1,9,1,9,1,9,1,9,9,9,1,1,   // 12
-//     1,9,1,9,1,9,9,9,1,9,1,9,1,9,1,9,9,9,1,1,   // 13
-//     1,9,1,1,1,1,9,9,1,9,1,9,1,1,1,1,9,9,1,1,   // 14
-//     1,9,1,1,9,1,1,1,1,9,1,1,1,1,9,1,1,1,1,1,   // 15
-//     1,9,9,9,9,1,1,1,1,1,1,9,9,9,9,9,1,1,1,1,   // 16
-//     1,1,9,9,9,9,9,9,9,1,1,1,1,1,1,1,1,1,1,1,   // 17
-//     1,9,1,1,1,1,1,1,1,1,1,9,1,1,1,1,1,1,1,1,   // 18
-//     1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,   // 19
-
-// };
+};
 
 // map helper functions
 
@@ -68,10 +57,7 @@ int GetMap( int x, int y )
         return 9;    
     }
 
-    if (world_map[(y*MAP_WIDTH)+x] < 9)
-        return 1;
-    else
-        return 9;
+    return world_map[(y*MAP_WIDTH)+x];
 }
 
 
@@ -93,7 +79,7 @@ public:
     float GetCost( MapSearchNode &successor );
     bool IsSameState( MapSearchNode &rhs );
 
-    void PrintNodeInfo(); 
+    void PrintNodeInfo(int result[][2], int steps); 
 
 
 };
@@ -114,15 +100,18 @@ bool MapSearchNode::IsSameState( MapSearchNode &rhs )
 
 }
 
-void MapSearchNode::PrintNodeInfo(int** result, int step)
+void MapSearchNode::PrintNodeInfo(int result[][2], int steps)
 {
-    result[step][0] = x;
-    result[step][1] = y;
-    
+    result[steps][0] = x;
+    result[steps][1] = y;
+
     // char str[100];
     // sprintf( str, "Node position : (%d,%d)\n", x,y );
 
+    // cout << world_map[y*MAP_WIDTH + x] << " ";
+
     // cout << str;
+
 }
 
 // Here's the heuristic function that estimates the distance from a Node
@@ -149,7 +138,7 @@ bool MapSearchNode::IsGoal( MapSearchNode &nodeGoal )
 // AddSuccessor to give the successors to the AStar class. The A* specific initialisation
 // is done for each node internally, so here you just set the state information that
 // is specific to the application
-bool MapSearchNode::GetSuccessors( AStarSearch<MapSearchNode> *astarsearch, MapSearchNode *parent_node, int* map_world )
+bool MapSearchNode::GetSuccessors( AStarSearch<MapSearchNode> *astarsearch, MapSearchNode *parent_node )
 {
 
     int parent_x = -1; 
@@ -215,8 +204,9 @@ float MapSearchNode::GetCost( MapSearchNode &successor )
 
 // Main
 
-void pathFinder( int* world_map2, int** result, int startX, int startY, int endX, int endY )
+int findPath( int* world_map2, int result[][2], int* start, int* end )
 {
+
 
     // Our sample problem defines the world as a 2d array representing a terrain
     // Each element contains an integer from 0 to 5 which indicates the cost 
@@ -226,7 +216,17 @@ void pathFinder( int* world_map2, int** result, int startX, int startY, int endX
 
     // Create an instance of the search class...
 
-    memcpy(world_map, world_map2, MAP_WIDTH*MAP_HEIGHT);
+    memcpy(world_map, world_map2, MAP_WIDTH*MAP_HEIGHT*sizeof(int));
+
+    // std::ofstream output("inputmatrix.txt"); 
+    // for (int i=0;i<MAP_WIDTH;i++)
+    // {
+    //     for (int j=0;j<MAP_HEIGHT;j++)
+    //     {
+    //         output << world_map[i*330+j] << " "; // behaves like cout - cout is also a stream
+    //     }
+    //     output << "\n";
+    // } 
 
     AStarSearch<MapSearchNode> astarsearch;
 
@@ -234,20 +234,22 @@ void pathFinder( int* world_map2, int** result, int startX, int startY, int endX
 
     const unsigned int NumSearches = 1;
 
+    int steps;
+
     while(SearchCount < NumSearches)
     {
 
         // Create a start state
         MapSearchNode nodeStart;
-
-        nodeStart.x = startX;
-        nodeStart.y = startY;
+        // cout << "start " << world_map[start[1]*MAP_WIDTH + start[0]] << endl;
+        nodeStart.x = start[0];
+        nodeStart.y = start[1];
 
         // Define the goal state
         MapSearchNode nodeEnd;
-
-        nodeEnd.x = endX;
-        nodeEnd.y = endY;
+        // cout << "end " << world_map[end[1]*MAP_WIDTH + end[0]] << endl;
+        nodeEnd.x = end[0];
+        nodeEnd.y = end[1];
         
         // Set Start and goal states
         
@@ -273,9 +275,9 @@ void pathFinder( int* world_map2, int** result, int startX, int startY, int endX
             while( p )
             {
                 len++;
-    #if !DEBUG_LIST_LENGTHS_ONLY            
+    // #if !DEBUG_LIST_LENGTHS_ONLY            
                 ((MapSearchNode *)p)->PrintNodeInfo();
-    #endif
+    // #endif
                 p = astarsearch.GetOpenListNext();
                 
             }
@@ -289,9 +291,9 @@ void pathFinder( int* world_map2, int** result, int startX, int startY, int endX
             while( p )
             {
                 len++;
-    #if !DEBUG_LIST_LENGTHS_ONLY            
+    // #if !DEBUG_LIST_LENGTHS_ONLY            
                 p->PrintNodeInfo();
-    #endif          
+    // #endif          
                 p = astarsearch.GetClosedListNext();
             }
 
@@ -310,7 +312,7 @@ void pathFinder( int* world_map2, int** result, int startX, int startY, int endX
     #if DISPLAY_SOLUTION
                 cout << "Displaying solution\n";
     #endif
-                int steps = 0;
+                steps = 0;
 
                 node->PrintNodeInfo(result, steps);
                 for( ;; )
@@ -347,7 +349,10 @@ void pathFinder( int* world_map2, int** result, int startX, int startY, int endX
 
         astarsearch.EnsureMemoryFreed();
     }
-    
-}
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // cout << "Result" << endl;
+    // for (int i = 0; i < steps; i++)
+    //     cout << result[i][0] << " " << result[i][1] << endl;
+    
+    return steps;
+}
