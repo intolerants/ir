@@ -401,7 +401,7 @@ void calc_direta(void) {
 
 void calc_tetas(double x, double y, double z, double phi) {
     int i;
-    printf("\nVou calcular tetas para posicao - x:%.2lf y:%.2lf z:%.2lf phi%.2lf\n", x, y, z, phi);
+    // printf("\nVou calcular tetas para posicao - x:%.2lf y:%.2lf z:%.2lf phi%.2lf\n", x, y, z, phi);
     phi *= PI / 180;
     double exy = sqrt(pow(x, 2) + pow(y, 2));
     teta[0] = atan2(y / exy, x / exy);
@@ -416,7 +416,7 @@ void calc_tetas(double x, double y, double z, double phi) {
     double beta = atan2(sin(teta[2]) * L3 / exz14, (L2 + L3 * c3) / exz14);
     teta[1] = alpha - beta;
     teta[3] = phi - teta[1] - teta[2];
-    printf("\nexy:%.2lf x14:%.2lf s3sqrt:%.2lf exz14:%.2lf\n", exy, x14, 1 - pow(c3, 2), exz14);
+    // printf("\nexy:%.2lf x14:%.2lf s3sqrt:%.2lf exz14:%.2lf\n", exy, x14, 1 - pow(c3, 2), exz14);
     for (i = 0; i < 4; i++) {
         rad2deg(&teta[i]);
         // printf("%d) %.2lf\n", i+1, teta[i]);
@@ -590,8 +590,8 @@ void pega() {
 }
 
 void solta() {
-    sprintf(comando, "#4P1320");
-    sense[4] = 1320;
+    sprintf(comando, "#4P1260");
+    sense[4] = 1260;
     enviar_comando(comando, serial_fd);
     memset(comando, 0, BUFSIZE);
 }
@@ -847,22 +847,22 @@ void fechaNoPipe(void) {
 }
 
 void pegaPipe(double x, double y) {
-    move(0, -26.8, 20.9, 0);
+    move(0, -26.8, 20.9, -90);
     sleep(2);
     printf("Preparando para pegar o cano...\n");
-    move(x-1.5, y+1, 25, -60);
+    move(x-3.3, y+2, 17, -90);
     printf("Abrindo garra...\n");
     sleep(3);
     solta();
     printf("Descendo...\n");
     sleep(1);
-    move_step_by_step(x-1.5, y+1, 11.3, -60);
+    move_step_by_step(x-3.3, y+2, 10.8, -90);
     printf("Fechando garra...\n");
     sleep(1);
     fechaNoPipe();
     printf("Subindo com o cano...\n");
     sleep(1);
-    move_step_by_step(x-1.5, y+1, 13.3, -60);
+    move_step_by_step(x-3.3, y+2, 13.3, -90);
     sleep(1);
 }
 
@@ -870,9 +870,13 @@ void juma(void) {
     calcPath();
     readPath();
     pegaPipe(path[0], path[1]);
-    // for (int i = 0; i < pathSize; ++i)
-    // {
-    //     move()
-    // }
+    for (int i = 0; i < pathSize; ++i)
+    {
+        move(path[i*2], path[i*2+1], 13.3, -90);
+        usleep(20000);
+    }
+    move(X, Y, Z - 5, -90);
+    usleep(500000);
+    solta();
     // sleep(100);
 }

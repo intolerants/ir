@@ -22,7 +22,7 @@
 #include "findpath.h"
 
 
-// #define DEBUG 1
+#define DEBUG 1
 #define BLUE 223
 #define YELLOW 238
 #define BLACK 21
@@ -33,7 +33,7 @@
 #define BRIGHTNESS 20
 #define aBLUR 2
 #define WIDTH 1400
-#define RADIUS 35
+#define RADIUS 36
 #define NUM_OF_ELEMENTS 7
 
 using namespace std;
@@ -387,7 +387,7 @@ int findCircles() {
 	/*
 	  Draw the circles detected
 	*/
-	detectionMap.convertTo(detectionMap, -1, 1, 250);
+	detectionMap.convertTo(detectionMap, -1, 1, 50);
 
 	char idCircle;
 	foundEnd = false;
@@ -415,7 +415,8 @@ int findCircles() {
 		} else if (idCircle == 'b') {
 			foundStart = true;
 
-			circle( detectionMap, center, 14, Scalar(0, 255, 255), -1, -1, 0 ); // circle outline
+			circle( detectionMap, center, radius, Scalar(0, 0, 255), 2, 8, 0 ); // circle outline
+			circle( detectionMap, center, 3, Scalar(0, 0, 255), -1, -1, 0 ); // circle outline
 
 		}
 		element[i] = center;
